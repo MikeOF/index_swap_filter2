@@ -22,8 +22,8 @@ void show_usage(std::string name) {
     std::cerr << "Usage: " 
     << name 
     << " threads work_dir_path sample_def sample_def [sample_def ...]" << std::endl
-    << "\tsample_def: <project_name>,<sample_name>,<whitelist_path>,<fastq_dir_path>,<star_reference_path>,<barcode_key>" << std::endl
-    << "\t\tbarcode_key: C[C ...]U[U ...] or U[U ...]C[C ...]"
+    << "\tsample_def: <project_name>,<sample_name>,<whitelist_path>,<fastq_dir_path>,<star_reference_path>,<barcode_key>,<barcode_fq_pattern>,<sequence_fq_pattern>" << std::endl
+    << "\t\tbarcode_key: [N ...]C[C ...][N ...]U[U ...][N ...] or [N ...]U[U ...][N ...]C[C ...][N ...]"
     << std::endl ;
 }
 
@@ -135,7 +135,7 @@ int main(int argc, char ** argv) {
 
 			std::string key = sample_key_stack.top() ; sample_key_stack.pop() ;
 
-			children.push_back(std::async (read_id_barcodes, samples.at(key))) ;
+			children.push_back(std::async (read_id_barcodes, samples.at(key), workdir)) ;
 		}
 
 		if (children.empty() && sample_key_stack.empty()) { running = false ; }

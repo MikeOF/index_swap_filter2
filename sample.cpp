@@ -9,7 +9,7 @@ Sample::Sample (std::string sample_def) {
 	  tokens.push_back(token) ;
 	}
 
-	if (tokens.size() != 6) {
+	if (tokens.size() != 8) {
 		throw "could not parse sample definition: " + sample_def ;
 	}
 
@@ -33,12 +33,22 @@ Sample::Sample (std::string sample_def) {
 		+ "\n\tStar Reference Path: " + star_reference_path.generic_string() + ", is not a directory" ;
 	}
 
-	std::string barcode_key = tokens[5] ;
+	// barcode and fastq definitions
 
-	// make sure that only C and U are present in the barcode_key
+	std::string barcode_key = tokens[5] ;
+	barcode_fq_pattern = tokens[6] ;
+	sequence_fq_pattern = tokens[7] ;
+
+	// make sure that only C, N, and U are present in the barcode_key
+	int num_N = 0;
 	for (int i = 0; i < barcode_key.size(); i++) {
-		if ((barcode_key[i] != 'C') && (barcode_key[i] != 'U')) {
-			throw "could not parse barcode key: " + barcode_key ;
+
+		if (barcode_key[i] == 'N') { num_N++ ; }
+
+		else {
+			if (barcode_key[i] != 'C' && barcode_key[i] != 'U' && barcode_key[i] != 'N') {
+				throw "could not parse barcode key: " + barcode_key ;
+			}
 		}
 	}
 
@@ -47,8 +57,29 @@ Sample::Sample (std::string sample_def) {
 	umi_start = barcode_key.find('U'); 
 	umi_len = barcode_key.rfind('U') - umi_start + 1;
 
-	if (cell_bc_len + umi_len > barcode_key.size()) {
+	if (cell_bc_len + umi_len + num_N != barcode_key.size()) {
 		throw "could not parse barcode key: " + barcode_key ;
+	}
+
+	// collect barcode and sequence fastqs
+	boost::filesystem::directory_iterator dit = boost::filesystem::directory_iterator(fastq_dir_path) ;
+
+	for (boost::filesystem::directory_entry& entry : dit) {
+
+		if (boost::filesystem::is_regular_file(entry.path())) {
+
+			std::string file_name = entry.path().filename().generic_string() ;
+
+			if (file_name.find(".fastq.gz") == file_name.size() - 9) {
+
+				if (file_name.find(barcode_fq_pattern) != std::string::npos) {
+					barcode_fastq_paths.push_back(entry.path().generic_string()) ;
+
+				} else if (file_name.find(sequence_fq_pattern) != std::string::npos) {
+					sequence_fastq_paths.push_back(entry.path().generic_string()) ;
+				}
+			}
+		}
 	}
 }
 
@@ -58,31 +89,6 @@ std::string Sample::parse_cell_barcode(std::string barcode) {
 
 std::string Sample::parse_umi(std::string barcode) {
 	return barcode.substr(umi_start, umi_len) ;
-}
-
-std::stack<boost::filesystem::path> Sample::get_barcode_fastq_paths() {
-
-	std::stack<boost::filesystem::path> fastq_stack ;
-
-	boost::filesystem::directory_iterator dit = boost::filesystem::directory_iterator(fastq_dir_path) ;
-
-	for (boost::filesystem::directory_entry& entry : dit) {
-
-		if (boost::filesystem::is_regular_file(entry.path())) {
-
-			boost::filesystem::path file_path = entry.path() ;
-			std::string file_name = file_path.filename().generic_string() ;
-
-			if (file_name.size() > 9) {
-
-				if (file_name.substr(file_name.size() - 9) == ".fastq.gz") {
-
-					fastq_stack.push(file_path) ;
-				}	
-			}
-		}
-	}
-	return fastq_stack ;
 }
 
 std::string Sample::to_string() {
@@ -95,6 +101,14 @@ std::string Sample::to_string() {
 	sample_str += "\tCell Barcode Len: " + std::to_string(cell_bc_len) ;
 	sample_str += "\n\tUMI Start: " + std::to_string(umi_start) ;
 	sample_str += "\tUMI Len: " + std::to_string(umi_len) ;
+	sample_str += "\n\tBarcode fastqs: " ;
+	for (boost::filesystem::path p : barcode_fastq_paths) {
+		sample_str += "\n\t\t" + p.generic_string() ;
+	}
+	sample_str += "\n\tSequence fastqs: " ;
+	for (boost::filesystem::path p : sequence_fastq_paths) {
+		sample_str += "\n\t\t" + p.generic_string() ;
+	}
 
 	return sample_str ;
 }

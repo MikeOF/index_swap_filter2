@@ -9,8 +9,7 @@
 class Whitelist {
 
 	// this is our hash set
-	std::unordered_set<std::string> whitelist_set;
-	std::string empty_string;
+	std::unordered_set<std::string> whitelist_set ;
 
 	public:
 
