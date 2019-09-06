@@ -16,6 +16,7 @@
 #include "sample.h"
 #include "workdir.h"
 #include "whitelist.h"
+#include "task_pool.h"
 #include "read_id_barcodes.h"
 
 void show_usage(std::string name) {
@@ -31,7 +32,7 @@ int main(int argc, char ** argv) {
 
 	// parse and validate arguments
 
-	if (argc < 5) { show_usage(argv[0]) ; }
+	if (argc < 5) { show_usage(argv[0]) ; return 1 ; }
 
 	// threads to run with
 	int threads ;
@@ -84,9 +85,9 @@ int main(int argc, char ** argv) {
 			sample_keys.push_back(key) ;
 		}
 
-	} catch (const std::string msg) {
+	} catch (std::exception& e) {
 
-		std::cerr << msg << std::endl ;
+		std::cerr << e.what() << std::endl ;
 		show_usage(argv[0]) ;
 		return 1;
 	}
@@ -101,45 +102,33 @@ int main(int argc, char ** argv) {
 	boost::filesystem::create_directory(work_dir_path) ;
 	Workdir workdir = Workdir(work_dir_path, samples) ;
 
-	// spin off threads to read read-id-barcodes for each sample
-	std::stack<std::string> sample_key_stack;
-	for (int i = 0; i < sample_keys.size(); i++) sample_key_stack.push(sample_keys[i]) ;
+	// create tasks to read read-id-barcodes for each sample
+	std::stack<Task> task_stack;
+	for (std::string key : sample_keys) {
 
-	std::vector<std::future<void>> children; 
-	std::chrono::milliseconds span (500);
+		for (std::string bc_fq_path : samples.at(key).get_barcode_fastq_paths()) {
 
-	bool running = true ;
-	while (running) {
+			std::string rid_barcodes_path = workdir.get_read_id_barcodes_path(key, bc_fq_path) ;
 
-		// check children
-		std::stack<int> to_remove ;
-		for (int i = 0; i < children.size(); i++) {
+			std::unordered_map<std::string, std::string> string_args ;
 
-			if (children[i].wait_for(span) == std::future_status::ready) {
+			string_args.insert({
+				{"read_id_barcodes_path", rid_barcodes_path}, 
+				{"fastq_path", bc_fq_path}
+			}) ;
 
-				to_remove.push(i) ; children[i].get() ;
-			} 
+			// create the task
+			Task task ; 
+			task.func = read_id_barcodes ; 
+			task.string_args = string_args ;
+			task.sample_ptr = &samples.at(key); 
+			task.workdir_ptr = &workdir;
+
+			task_stack.push(task) ;
 		}
-
-		// remove completed children
-		while (!to_remove.empty()) { 
-
-			children.erase(children.begin() + to_remove.top()) ; to_remove.pop() ; 
-		}
-
-		// start threads
-		int children_to_start = threads - children.size() ;
-		if (children_to_start > sample_key_stack.size()) { children_to_start = sample_key_stack.size() ; }
-
-		for (int i = 0; i < children_to_start; i++) {
-
-			std::string key = sample_key_stack.top() ; sample_key_stack.pop() ;
-
-			children.push_back(std::async (read_id_barcodes, samples.at(key), workdir)) ;
-		}
-
-		if (children.empty() && sample_key_stack.empty()) { running = false ; }
 	}
+
+	run_tasks(threads, task_stack) ;
 
 	// while (true) std::cout << "done\n" ; std::this_thread::sleep_for(span) ;
 

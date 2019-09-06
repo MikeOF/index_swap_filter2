@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <fstream>
+#include <unordered_map>
 #include <sstream>
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
@@ -13,7 +14,8 @@
 #include "sample.h"
 #include "whitelist.h"
 #include "workdir.h"
+#include "task_pool.h"
 
-void read_id_barcodes(Sample, Workdir) ;
+void read_id_barcodes(Task) ;
 
 #endif

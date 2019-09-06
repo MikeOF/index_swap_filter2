@@ -10,7 +10,7 @@ Sample::Sample (std::string sample_def) {
 	}
 
 	if (tokens.size() != 8) {
-		throw "could not parse sample definition: " + sample_def ;
+		throw std::runtime_error ("could not parse sample definition: " + sample_def) ;
 	}
 
 	project_name = tokens[0] ;
@@ -21,16 +21,16 @@ Sample::Sample (std::string sample_def) {
 
 	// check paths
 	if (!boost::filesystem::is_regular_file(whitelist_path)) {
-		throw "For Sample Def: " + sample_def 
-		+ "\n\tWhitelist Path: " + whitelist_path.generic_string() + ", is not a file" ;
+		throw std::runtime_error ("For Sample Def: " + sample_def 
+		+ "\n\tWhitelist Path: " + whitelist_path.generic_string() + ", is not a file") ;
 	}
 	if (!boost::filesystem::is_directory(fastq_dir_path)) {
-		throw "For Sample Def: " + sample_def 
-		+ "\n\tFastq Dir Path: " + fastq_dir_path.generic_string() + ", is not a directory" ;
+		throw std::runtime_error ("For Sample Def: " + sample_def 
+		+ "\n\tFastq Dir Path: " + fastq_dir_path.generic_string() + ", is not a directory") ;
 	}
 	if (!boost::filesystem::is_directory(star_reference_path)) {
-		throw "For Sample Def: " + sample_def 
-		+ "\n\tStar Reference Path: " + star_reference_path.generic_string() + ", is not a directory" ;
+		throw std::runtime_error ("For Sample Def: " + sample_def 
+		+ "\n\tStar Reference Path: " + star_reference_path.generic_string() + ", is not a directory") ;
 	}
 
 	// barcode and fastq definitions
@@ -47,7 +47,7 @@ Sample::Sample (std::string sample_def) {
 
 		else {
 			if (barcode_key[i] != 'C' && barcode_key[i] != 'U' && barcode_key[i] != 'N') {
-				throw "could not parse barcode key: " + barcode_key ;
+				throw std::runtime_error ("could not parse barcode key: " + barcode_key) ;
 			}
 		}
 	}
@@ -58,7 +58,7 @@ Sample::Sample (std::string sample_def) {
 	umi_len = barcode_key.rfind('U') - umi_start + 1;
 
 	if (cell_bc_len + umi_len + num_N != barcode_key.size()) {
-		throw "could not parse barcode key: " + barcode_key ;
+		throw std::runtime_error ("could not parse barcode key: " + barcode_key) ;
 	}
 
 	// collect barcode and sequence fastqs
@@ -70,17 +70,26 @@ Sample::Sample (std::string sample_def) {
 
 			std::string file_name = entry.path().filename().generic_string() ;
 
-			if (file_name.find(".fastq.gz") == file_name.size() - 9) {
+			// check if this is a fastq for this sample
+			if (file_name.substr(0, sample_name.size()) != sample_name) continue ;
+			if (file_name.find(".fastq.gz") != file_name.size() - 9) continue ;
 
-				if (file_name.find(barcode_fq_pattern) != std::string::npos) {
-					barcode_fastq_paths.push_back(entry.path().generic_string()) ;
+			// add to the appropriate vector
+			if (file_name.find(barcode_fq_pattern) != std::string::npos) {
+				barcode_fastq_paths.push_back(entry.path().generic_string()) ;
 
-				} else if (file_name.find(sequence_fq_pattern) != std::string::npos) {
-					sequence_fastq_paths.push_back(entry.path().generic_string()) ;
-				}
+			} else if (file_name.find(sequence_fq_pattern) != std::string::npos) {
+				sequence_fastq_paths.push_back(entry.path().generic_string()) ;
 			}
 		}
 	}
+
+	// make sure we found the fastqs
+	if (barcode_fastq_paths.size() == 0 ) throw std::runtime_error (
+		"No barcode fastqs found for " + project_name + " " + sample_name) ;
+
+	if (sequence_fastq_paths.size() == 0) throw std::runtime_error (
+		"No sequence fastqs found for " + project_name + " " + sample_name) ;
 }
 
 std::string Sample::parse_cell_barcode(std::string barcode) {

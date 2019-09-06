@@ -2,6 +2,7 @@
 #define SAMPLE_H
 
 #include <string>
+#include <stdexcept>
 #include <sstream>
 #include <vector>
 #include <iostream>
@@ -27,8 +28,8 @@ class Sample {
 		boost::filesystem::path get_fastq_dir_path() { return boost::filesystem::path(fastq_dir_path) ; }
 		boost::filesystem::path get_star_reference_path() { return boost::filesystem::path(star_reference_path) ; }
 		std::string get_key() { return sample_name + "_" + project_name ; }
-		std::vector<std::string> get_barcode_fastq_paths() { return std::vector<std::string> (barcode_fastq_paths) ; } 
-		std::vector<std::string> get_sequence_fastq_paths() { return std::vector<std::string> (sequence_fastq_paths) ; } 
+		std::vector<std::string> get_barcode_fastq_paths() { return barcode_fastq_paths ; } 
+		std::vector<std::string> get_sequence_fastq_paths() { return sequence_fastq_paths ; } 
 
 		std::string parse_cell_barcode(std::string) ;
 		std::string parse_umi(std::string) ;
