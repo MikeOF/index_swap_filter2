@@ -103,7 +103,7 @@ int main(int argc, char ** argv) {
 	Workdir workdir = Workdir(work_dir_path, samples) ;
 
 	// create tasks to read read-id-barcodes for each sample
-	std::stack<Task> task_stack;
+	std::stack<Task<int>> task_stack;
 	for (std::string key : sample_keys) {
 
 		for (std::string bc_fq_path : samples.at(key).get_barcode_fastq_paths()) {
@@ -118,7 +118,7 @@ int main(int argc, char ** argv) {
 			}) ;
 
 			// create the task
-			Task task ; 
+			Task<int> task ; 
 			task.func = read_id_barcodes ; 
 			task.string_args = string_args ;
 			task.sample_ptr = &samples.at(key); 
@@ -127,6 +127,7 @@ int main(int argc, char ** argv) {
 			task_stack.push(task) ;
 		}
 	}
+
 
 	run_tasks(threads, task_stack) ;
 

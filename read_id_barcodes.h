@@ -16,6 +16,6 @@
 #include "workdir.h"
 #include "task_pool.h"
 
-void read_id_barcodes(Task) ;
+int read_id_barcodes(Task<int>) ;
 
 #endif

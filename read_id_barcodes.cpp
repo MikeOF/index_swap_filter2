@@ -1,6 +1,6 @@
 #include "read_id_barcodes.h"
 
-void read_id_barcodes(Task task) {
+int read_id_barcodes(Task<int> task) {
 
 	std::string read_id_barcodes_path = task.string_args.at("read_id_barcodes_path") ;
 	std::string fastq_path = task.string_args.at("fastq_path") ;
@@ -60,4 +60,6 @@ void read_id_barcodes(Task task) {
 
     in_file.close() ;
 	out_file.close() ;
+
+    return 0 ;
 }
