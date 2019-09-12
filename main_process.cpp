@@ -48,12 +48,14 @@ int main(int argc, char ** argv) {
 	// work dir path
 	boost::filesystem::path work_dir_path = boost::filesystem::path(argv[2]) ;
 	if (boost::filesystem::exists(work_dir_path)) {
+		std::cout << "hello1\n" ;
 		std::cerr << "work dir path, " << work_dir_path.generic_string() 
 		<< ", already exists, will not overwrite" << std::endl ;
 		show_usage(argv[0]) ;
 		return 1;
 	}
 	if (!boost::filesystem::is_directory(work_dir_path.parent_path())) {
+		std::cout << "hello2\n" ;
 		std::cerr << "work dir path, " << work_dir_path.generic_string() 
 		<< ", does not have a directory for a parent" << std::endl ;
 		show_usage(argv[0]) ;
