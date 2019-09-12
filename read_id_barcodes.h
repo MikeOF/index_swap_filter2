@@ -16,6 +16,12 @@
 #include "workdir.h"
 #include "task_pool.h"
 
-int read_id_barcodes(Task<int>) ;
+struct Read_id_barcodes_args {
+	std::string read_id_barcodes_path ;
+	std::string fastq_path ;
+	Sample * sample_ptr ;
+};
+
+int read_id_barcodes(Task<int, Read_id_barcodes_args>) ;
 
 #endif

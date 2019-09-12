@@ -18,6 +18,7 @@
 #include "whitelist.h"
 #include "task_pool.h"
 #include "read_id_barcodes.h"
+#include "suspect_barcodes.h"
 
 void show_usage(std::string name) {
     std::cerr << "Usage: " 
@@ -103,33 +104,35 @@ int main(int argc, char ** argv) {
 	Workdir workdir = Workdir(work_dir_path, samples) ;
 
 	// create tasks to read read-id-barcodes for each sample
-	std::stack<Task<int>> task_stack;
+	std::stack<Task<int, Read_id_barcodes_args>> task_stack;
 	for (std::string key : sample_keys) {
 
 		for (std::string bc_fq_path : samples.at(key).get_barcode_fastq_paths()) {
 
-			std::string rid_barcodes_path = workdir.get_read_id_barcodes_path(key, bc_fq_path) ;
-
-			std::unordered_map<std::string, std::string> string_args ;
-
-			string_args.insert({
-				{"read_id_barcodes_path", rid_barcodes_path}, 
-				{"fastq_path", bc_fq_path}
-			}) ;
+			// create the arguments
+			Read_id_barcodes_args args ;
+			args.read_id_barcodes_path = workdir.get_read_id_barcodes_path(key, bc_fq_path) ;
+			args.fastq_path = bc_fq_path ;
+			args.sample_ptr = &samples.at(key) ;
 
 			// create the task
-			Task<int> task ; 
+			Task<int, Read_id_barcodes_args> task ; 
 			task.func = read_id_barcodes ; 
-			task.string_args = string_args ;
-			task.sample_ptr = &samples.at(key); 
-			task.workdir_ptr = &workdir;
+			task.args = args ;
 
-			task_stack.push(task) ;
+			task_stack.emplace(task) ;
 		}
 	}
 
+	std::cout << "hello before run_tasks" << std::endl ;
 
 	run_tasks(threads, task_stack) ;
+
+	std::cout << "hello after run_tasks" << std::endl ;
+
+	write_out_suspect_barcodes(sample_keys, samples, workdir) ;
+
+	while(true) {std::cout << "hi" << std::endl; std::this_thread::sleep_for (std::chrono::seconds (5)) ;}
 
 	// while (true) std::cout << "done\n" ; std::this_thread::sleep_for(span) ;
 

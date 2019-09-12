@@ -1,12 +1,13 @@
 #include "read_id_barcodes.h"
 
-int read_id_barcodes(Task<int> task) {
+int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
 
-	std::string read_id_barcodes_path = task.string_args.at("read_id_barcodes_path") ;
-	std::string fastq_path = task.string_args.at("fastq_path") ;
-	Sample sample = *task.sample_ptr ;
-	Workdir workdir = *task.workdir_ptr ;
+    // parse arguments
+	std::string read_id_barcodes_path = task.args.read_id_barcodes_path ;
+	std::string fastq_path = task.args.fastq_path ;
+	Sample sample = * task.args.sample_ptr ; 
 
+    // create the whitelist
 	Whitelist wlist = Whitelist(sample.get_whitelist_path().generic_string()) ;
 
 	// create the output writer
@@ -32,8 +33,9 @@ int read_id_barcodes(Task<int> task) {
     std::istream instream(&inbuf);
 
     // lines
-    std::string lines[4];
-    int cnt = 0;
+    std::string lines[4] ;
+    int cnt = 0 ;
+    int seq_cnt = 0 ;
 
     while (std::getline(instream, lines[cnt])) {
 
@@ -41,6 +43,7 @@ int read_id_barcodes(Task<int> task) {
 
     	if (cnt == 4) { // then we have a complete sequence
 			cnt = 0;
+            seq_cnt++ ;
 
 			std::string read_id = lines[0].substr(0, lines[0].find_first_of(' ')) ;
     		std::string cell_bc = sample.parse_cell_barcode(lines[1]) ;
@@ -55,11 +58,15 @@ int read_id_barcodes(Task<int> task) {
     		if (!v_cell_bc.empty()) {
 	    		outstream << v_cell_bc << umi << '\t' << read_id << std::endl ;
     		}
+
+            if (seq_cnt % 50000 == 0) { std::cout << sample.get_project_name() + " - " + sample.get_sample_name() + " - " + std::to_string(seq_cnt) + " sequences read\n" ; }
     	}
     }
 
     in_file.close() ;
 	out_file.close() ;
+
+    std::cout << sample.get_project_name() + " - " + sample.get_sample_name() + " - finished\n" ; 
 
     return 0 ;
 }

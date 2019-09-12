@@ -19,6 +19,9 @@ Workdir::Workdir (boost::filesystem::path base_dir_path_arg,
 		std::string key = it->first ;
 		Sample sample = it->second ;
 
+		// store key
+		sample_keys.push_back(key) ;
+
 		// create sample work dir
 		boost::filesystem::path sample_dir_path = boost::filesystem::path(base_dir_path) ;
 		sample_dir_path /= key ;
