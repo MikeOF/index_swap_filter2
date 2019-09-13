@@ -35,7 +35,7 @@ int main(int argc, char ** argv) {
 
 	if (argc < 5) { show_usage(argv[0]) ; return 1 ; }
 
-	// threads to run with
+	// threads to run with 
 	int threads ;
 	try {
 		threads = std::stoi(argv[1]) ;
