@@ -8,9 +8,6 @@
 #include <chrono>
 #include <unordered_map>
 #include <stack>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
 
 #include "sample.h"
 #include "whitelist.h"

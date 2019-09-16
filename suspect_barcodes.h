@@ -8,9 +8,10 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <sstream>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
+
+#include "boost/iostreams/filtering_streambuf.hpp"
+#include "boost/iostreams/copy.hpp"
+#include "boost/iostreams/filter/gzip.hpp"
 
 #include "sample.h"
 #include "workdir.h"

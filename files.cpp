@@ -1,98 +1,125 @@
 #include "files.h"
 
-#define GZBUFFER_LENGTH 0x1000
+mode_t get_mode(std::string path) {
+	struct stat pstat ;
+	stat(path.c_str(), &pstat) ;
 
-int get_next(char * buffer, char c, int pos, int length) {
-	while (pos < length) {
-		std::cout << "hello\n" ; 
-		if (buffer[pos] == c) {
-			return pos ;
-		}
-		pos++ ;
-	}
-	return -1 ;
+	return(pstat.st_mode) ;
 }
 
-int main(int argc, char ** argv) {
+std::string get_parent_path(std::string path) {
 
-	// parse and validate arguments
+	int last_sep = path.rfind('/') ;
 
-	if (argc != 2) { std::cout << "your should pass 1 path argument\n" ; return 1 ; }
-
-	struct stat buf ;
-
-	stat(argv[1], &buf);
-
-	mode_t mode = buf.st_mode ;
-
-	std::cout << mode << std::endl ;
-
-	std::cout << argv[1] << std::endl ;
-
-	// std::cout << "next - " << get_next(argv[1], '.', 0, 20) << std::endl ;
-
-	if (S_ISDIR(mode)) { std::cout << "it is a dir" << std::endl ; }
-	if (S_ISREG(mode)) { 
-		std::cout << "it is a regular file" << std::endl ;
-
-		std::string fpath = std::string(argv[1]) ;
-
-		if (fpath.find(".gz") != std::string::npos) {
-
-	        gzFile file ; 
-	        int err, bytes_read ; 
-	        unsigned char in_buffer[GZBUFFER_LENGTH] ; 
-
-	        file = gzopen(fpath.c_str(),"r") ;
-
-
-    		char ** lines[4] ; 
-    		int line_cnt = 0 ;
-    		int buffer_start = 0 ;
-	        bool more_to_read = true ;
-	        while(more_to_read) {
-
-	        	bytes_read = gzread (file, in_buffer, GZBUFFER_LENGTH - 1 - buffer_start) ;
-				in_buffer[bytes_read] = '\0' ;
-				more_to_read = ! gzeof (file) ;
-
-
-
-				printf("%s", in_buffer) ;
-
-				more_to_read = ! gzeof (file) ;
-
-
-	        }
-
-			// while (1) {
-
-			// 	int err;                    
-			// 	int bytes_read ; 
-			// 	unsigned char buffer[GZBUFFER_LENGTH] ;
-			// 	bytes_read = gzread (file, buffer, GZBUFFER_LENGTH - 1) ;
-			// 	buffer[bytes_read] = '\0' ;
-			// 	printf ("%s", buffer) ;
-
-			// 	if (bytes_read < GZBUFFER_LENGTH - 1) {
-			// 		if (gzeof (file)) {
-			// 			break;
-			// 		} else {
-			// 			const char * error_string;
-			// 			error_string = gzerror (file, & err);
-			// 			if (err) {
-			// 				fprintf (stderr, "Error: %s.\n", error_string);
-			// 				exit (EXIT_FAILURE);
-			// 			}
-			// 		}
-			// }
-
-			gzclose (file) ;
-		}
-
-		
+	if (last_sep == std::string::npos) {
+		return "." ;
+	} else {
+		return path.substr(0, last_sep) ;
 	}
-	if (S_ISLNK(mode)) { std::cout << "it is a link" << std::endl ; }
+}
 
-	return 0;
+std::string get_absolute_path(std::string path) {
+
+	if (path.find('/') == 0) {
+		return path ;
+	}
+
+	char buf [PATH_MAX] ;
+
+	getcwd(buf, PATH_MAX) ;
+
+	return std::string(buf) + "/" + path ;
+}
+
+bool file_exists(std::string path) {
+
+	struct stat pstat ;
+	stat(path.c_str(), &pstat) ;
+
+	return (stat(path.c_str(), &pstat) == 0) ;
+}
+
+bool is_file(std::string path) {
+
+	mode_t pmode = get_mode(path) ;
+
+	return (S_IFREG & pmode) ;
+}
+
+bool is_dir(std::string path) {
+
+	mode_t pmode = get_mode(path) ;
+
+	return (S_IFDIR & pmode) ;
+}
+
+std::vector<std::string> get_dir_list(std::string path) {
+
+	DIR * dir;
+	struct dirent * ent;
+	std::vector<std::string> ret_vect ;
+
+	if ((dir = opendir(path.c_str())) != NULL) {
+
+		/* collect all the files and directories within directory */
+
+		while ((ent = readdir (dir)) != NULL) {
+
+			std::string file_name = std::string(ent->d_name) ;
+
+			if (file_name != "." && file_name != "..") ret_vect.push_back(std::string(ent->d_name)) ;
+
+		}
+		closedir (dir);
+
+	} else {
+
+		/* could not open directory */
+		perror ("");
+	}
+
+	return ret_vect ;
+} ;
+
+bool dir_is_empty(std::string path) {
+
+	std::vector<std::string> ret_vect = get_dir_list(path) ;
+
+	return ret_vect.empty() ;
+
+}
+
+std::string get_filename(std::string path) {
+
+	if (!is_file(path)) { throw path + " is not a file" ; }
+
+	int last_sep = path.rfind('/') ;
+
+	if (last_sep == std::string::npos) { return path ; }
+
+	return path.substr(last_sep + 1) ;
+}
+
+std::string get_file_stem(std::string path) {
+
+	std::string file_name = get_filename(path) ;
+
+	int first_dot = file_name.find('.') ;
+
+	if (first_dot == std::string::npos) { return file_name ; }
+
+	return file_name.substr(0, first_dot) ;
+}
+
+std::string remove_trailing_slashes(std::string path) {
+
+	while (path.at(path.size() - 1) == '/') { path = path.substr(0, path.size() - 1) ; }
+
+	return path ;
+}
+
+void make_dir(std::string path) {
+
+	int rval = mkdir(path.c_str(),  0777) ;
+	if (rval) throw "Could not make directory: " + path + "\n" ;
 }

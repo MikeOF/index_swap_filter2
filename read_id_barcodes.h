@@ -7,10 +7,10 @@
 #include <fstream>
 #include <unordered_map>
 #include <sstream>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
-#include <zlib.h>
+
+#include "boost/iostreams/filtering_streambuf.hpp"
+#include "boost/iostreams/copy.hpp"
+#include "boost/iostreams/filter/gzip.hpp"
 
 #include "sample.h"
 #include "whitelist.h"

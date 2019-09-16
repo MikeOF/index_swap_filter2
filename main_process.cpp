@@ -8,11 +8,8 @@
 #include <unordered_map>
 #include <exception>
 #include <array>
-#include <boost/filesystem.hpp>
-#include <boost/iostreams/filtering_streambuf.hpp>
-#include <boost/iostreams/copy.hpp>
-#include <boost/iostreams/filter/gzip.hpp>
 
+#include "files.h"
 #include "sample.h"
 #include "workdir.h"
 #include "whitelist.h"
@@ -33,7 +30,7 @@ int main(int argc, char ** argv) {
 
 	// parse and validate arguments
 
-	if (argc < 5) { show_usage(argv[0]) ; return 1 ; }
+	if (argc < 5) { show_usage(argv[0]) ; exit(1) ; }
 
 	// threads to run with 
 	int threads ;
@@ -42,24 +39,22 @@ int main(int argc, char ** argv) {
 	} catch (const char* msg) {
 		std::cerr << msg << std::endl ;
 		show_usage(argv[0]) ;
-		return 1;
+		exit(1) ; 
 	}
 
 	// work dir path
-	boost::filesystem::path work_dir_path = boost::filesystem::path(argv[2]) ;
-	if (boost::filesystem::exists(work_dir_path)) {
-		std::cout << "hello1\n" ;
-		std::cerr << "work dir path, " << work_dir_path.generic_string() 
+	std::string work_dir_path (argv[2]) ;
+	if (file_exists(work_dir_path)) {
+		std::cerr << "work dir path, " << work_dir_path
 		<< ", already exists, will not overwrite" << std::endl ;
 		show_usage(argv[0]) ;
-		return 1;
+		exit(1) ; 
 	}
-	if (!boost::filesystem::is_directory(work_dir_path.parent_path())) {
-		std::cout << "hello2\n" ;
-		std::cerr << "work dir path, " << work_dir_path.generic_string() 
+	if (!is_dir(get_parent_path(work_dir_path))) {
+		std::cerr << "work dir path, " << work_dir_path
 		<< ", does not have a directory for a parent" << std::endl ;
 		show_usage(argv[0]) ;
-		return 1;
+		exit(1) ; 
 	}
 
 	// each sample
@@ -76,7 +71,7 @@ int main(int argc, char ** argv) {
 				std::cerr << "Duplicate Sample Defs for "<< sample.get_project_name() 
 				<< " " << sample.get_sample_name() << std::endl ;
 				show_usage(argv[0]) ;
-				return 1;
+				exit(1) ; 
 			}
 
 			std::string key = sample.get_key() ;
@@ -92,7 +87,7 @@ int main(int argc, char ** argv) {
 
 		std::cerr << e.what() << std::endl ;
 		show_usage(argv[0]) ;
-		return 1;
+		exit(1) ; 
 	}
 
 	// print off samples
@@ -101,8 +96,8 @@ int main(int argc, char ** argv) {
 		std::cout << it->second.to_string() << std::endl << std::endl ;
 	}
 
-	// create the workdir
-	boost::filesystem::create_directory(work_dir_path) ;
+	// create the workdir 
+	make_dir(work_dir_path) ;
 	Workdir workdir = Workdir(work_dir_path, samples) ;
 
 	// create tasks to read read-id-barcodes for each sample
