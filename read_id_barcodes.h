@@ -10,6 +10,7 @@
 #include <boost/iostreams/filtering_streambuf.hpp>
 #include <boost/iostreams/copy.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
+#include <zlib.h>
 
 #include "sample.h"
 #include "whitelist.h"

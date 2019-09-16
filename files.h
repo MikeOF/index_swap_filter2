@@ -11,6 +11,9 @@
 #include <errno.h>
 
 bool is_file(std::string) ;
+bool is_dir(std::string) ;
+bool open_gz_file(std::string) ;
+
 
 
 #endif

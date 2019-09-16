@@ -1,5 +1,7 @@
 #include "read_id_barcodes.h"
 
+#define GZBUFFER_LENGTH 0x1000
+
 int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
 
     // parse arguments
@@ -24,10 +26,16 @@ int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
 	std::cout << msg ;
 
 	// create the input reader
-	std::ifstream in_file(fastq_path, std::ios_base::in | std::ios_base::binary);
+    std::ifstream in_file(fastq_path, std::ios_base::in | std::ios_base::binary);
     boost::iostreams::filtering_streambuf<boost::iostreams::input> inbuf;
     inbuf.push(boost::iostreams::gzip_decompressor());
     inbuf.push(in_file);
+
+    //gzFile file ; int err, bytes_read ; unsigned char in_buffer[GZBUFFER_LENGTH] ; std::string in_string(in_buffer) ;
+    //file = gzopen (fastq_path.c_str(), "r") ;
+
+
+
 
     //Convert streambuf to istream
     std::istream instream(&inbuf);
@@ -38,6 +46,13 @@ int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
     int seq_cnt = 0 ;
 
     while (std::getline(instream, lines[cnt])) {
+
+        //gzFile file ; int err, bytes_read ; unsigned char in_buffer[GZBUFFER_LENGTH] ;
+        //file = gzopen (fastq_path.c_str(), "r") ;
+
+        //if (bytes_read == 0) { break ; }
+
+        //std::stringstream in = 
 
     	cnt++;
 
