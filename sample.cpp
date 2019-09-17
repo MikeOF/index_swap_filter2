@@ -5,9 +5,7 @@ Sample::Sample (std::string sample_def) {
 	std::vector<std::string> tokens ;
 	std::string token ;
 	std::istringstream token_stream(sample_def) ;
-	while (std::getline(token_stream, token, ',')) {
-	  tokens.push_back(token) ;
-	}
+	while (std::getline(token_stream, token, ',')) tokens.push_back(token) ;
 
 	if (tokens.size() != 8) {
 		throw std::runtime_error ("could not parse sample definition: " + sample_def) ;
@@ -15,22 +13,22 @@ Sample::Sample (std::string sample_def) {
 
 	project_name = tokens[0] ;
 	sample_name = tokens[1] ;
-	whitelist_path = boost::filesystem::path(tokens[2]) ;
-	fastq_dir_path = boost::filesystem::path(tokens[3]) ;
-	star_reference_path = boost::filesystem::path(tokens[4]) ;
+	whitelist_path = tokens[2] ;
+	fastq_dir_path = tokens[3] ;
+	star_reference_path = tokens[4] ;
 
 	// check paths
-	if (!boost::filesystem::is_regular_file(whitelist_path)) {
+	if (!is_file(whitelist_path)) {
 		throw std::runtime_error ("For Sample Def: " + sample_def 
-		+ "\n\tWhitelist Path: " + whitelist_path.generic_string() + ", is not a file") ;
+		+ "\n\tWhitelist Path: " + whitelist_path + ", is not a file") ;
 	}
-	if (!boost::filesystem::is_directory(fastq_dir_path)) {
+	if (!is_dir(fastq_dir_path)) {
 		throw std::runtime_error ("For Sample Def: " + sample_def 
-		+ "\n\tFastq Dir Path: " + fastq_dir_path.generic_string() + ", is not a directory") ;
+		+ "\n\tFastq Dir Path: " + fastq_dir_path + ", is not a directory") ;
 	}
-	if (!boost::filesystem::is_directory(star_reference_path)) {
+	if (!is_dir(star_reference_path)) {
 		throw std::runtime_error ("For Sample Def: " + sample_def 
-		+ "\n\tStar Reference Path: " + star_reference_path.generic_string() + ", is not a directory") ;
+		+ "\n\tStar Reference Path: " + star_reference_path + ", is not a directory") ;
 	}
 
 	// barcode and fastq definitions
@@ -62,13 +60,13 @@ Sample::Sample (std::string sample_def) {
 	}
 
 	// collect barcode and sequence fastqs
-	boost::filesystem::directory_iterator dit = boost::filesystem::directory_iterator(fastq_dir_path) ;
+	std::vector<std::string> file_paths = get_dir_list(fastq_dir_path) ;
 
-	for (boost::filesystem::directory_entry& entry : dit) {
+	for (std::string file_path : file_paths) {
 
-		if (boost::filesystem::is_regular_file(entry.path())) {
+		if (is_file(file_path)) {
 
-			std::string file_name = entry.path().filename().generic_string() ;
+			std::string file_name = get_filename(file_path) ;
 
 			// check if this is a fastq for this sample
 			if (file_name.substr(0, sample_name.size()) != sample_name) continue ;
@@ -76,10 +74,10 @@ Sample::Sample (std::string sample_def) {
 
 			// add to the appropriate vector
 			if (file_name.find(barcode_fq_pattern) != std::string::npos) {
-				barcode_fastq_paths.push_back(entry.path().generic_string()) ;
+				barcode_fastq_paths.push_back(file_path) ;
 
 			} else if (file_name.find(sequence_fq_pattern) != std::string::npos) {
-				sequence_fastq_paths.push_back(entry.path().generic_string()) ;
+				sequence_fastq_paths.push_back(file_path) ;
 			}
 		}
 	}
@@ -103,20 +101,20 @@ std::string Sample::parse_umi(std::string barcode) {
 std::string Sample::to_string() {
 	std::string sample_str = "Project Name: " + project_name ;
 	sample_str +=  "\nSample Name: " + sample_name ;
-	sample_str += "\n\tWhitelist Path: " + whitelist_path.generic_string() ;
-	sample_str += "\n\tFastq Dir Path: " + fastq_dir_path.generic_string() ;
-	sample_str += "\n\tStar Reference Path: " + star_reference_path.generic_string() ;
+	sample_str += "\n\tWhitelist Path: " + whitelist_path ;
+	sample_str += "\n\tFastq Dir Path: " + fastq_dir_path ;
+	sample_str += "\n\tStar Reference Path: " + star_reference_path ;
 	sample_str += "\n\tCell Barcode Start: " + std::to_string(cell_bc_start)  ;
 	sample_str += "\tCell Barcode Len: " + std::to_string(cell_bc_len) ;
 	sample_str += "\n\tUMI Start: " + std::to_string(umi_start) ;
 	sample_str += "\tUMI Len: " + std::to_string(umi_len) ;
 	sample_str += "\n\tBarcode fastqs: " ;
-	for (boost::filesystem::path p : barcode_fastq_paths) {
-		sample_str += "\n\t\t" + p.generic_string() ;
+	for (std::string p : barcode_fastq_paths) {
+		sample_str += "\n\t\t" + p ;
 	}
 	sample_str += "\n\tSequence fastqs: " ;
-	for (boost::filesystem::path p : sequence_fastq_paths) {
-		sample_str += "\n\t\t" + p.generic_string() ;
+	for (std::string p : sequence_fastq_paths) {
+		sample_str += "\n\t\t" + p ;
 	}
 
 	return sample_str ;

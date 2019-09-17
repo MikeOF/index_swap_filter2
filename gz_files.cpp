@@ -1,12 +1,19 @@
-#include <zlib.h>
-#include <iostream>
-#include <string>
-#include <vector>
-#include <cstring>
-
 #include "gz_files.h"
 
 using namespace std ;
+
+void gz_begin_gzins(Gzins * gzins) {
+
+	gzins->begun = true ;
+
+	// open the file
+	gzins->gzfile = gzopen(gzins->file_path.c_str(), "r") ;
+	if (gzins->gzfile == NULL) throw "could not open gzipped file, " + gzins->file_path + "\n" ;
+
+	// set the internal gz buffer
+	bool check = gzbuffer(gzins->gzfile, gzf_internal_buffer_bytes) ;
+	if (check) throw "could not set the zlib buffer\n" ;
+}
 
 void gz_read_to_buffer(Gzins * gzins) {
 
@@ -61,18 +68,7 @@ void gz_read_lines(Gzins * gzins) {
 	if (gzins->finished) return ;
 
 	// begin the gz read process if necessary
-	if (! gzins->begun) {
-
-		gzins->begun = true ;
-
-		// open the file
-		gzins->gzfile = gzopen(gzins->file_path.c_str(), "r") ;
-		if (gzins->gzfile == NULL) throw "could not open gzipped file, " + gzins->file_path + "\n" ;
-
-		// set the internal gz buffer
-		bool check = gzbuffer(gzins->gzfile, gzf_internal_buffer_bytes) ;
-		if (check) throw "could not set the zlib buffer\n" ;
-	} 
+	if (! gzins->begun) gz_begin_gzins(gzins) ;
 
 	gz_read_to_buffer(gzins) ;
 
@@ -86,34 +82,35 @@ void gz_read_lines(Gzins * gzins) {
 	}
 }
 
+void gz_begin_gzouts(Gzouts * gzouts) {
+
+	gzouts->begun = true ;
+
+	// open the file
+	gzouts->gzfile = gzopen(gzouts->file_path.c_str(), "w") ;
+	if (gzouts->gzfile == NULL) throw "could not open gzipped file, " + gzouts->file_path + "\n" ;
+
+	// set the internal gz buffer
+	bool check = gzbuffer(gzouts->gzfile, gzf_internal_buffer_bytes) ;
+	if (check) throw "could not set the zlib buffer\n" ;
+
+	// set the buffer terminal char
+	gzouts->buffer_last_byte = gzouts->buffer + gzf_char_buffer_size_bytes - 1 ;
+	gzouts->buffer_last_byte[0] = '\0' ;
+	gzouts->buffer_position = gzouts->buffer ;
+}
+
 void gz_write_lines(Gzouts * gzouts) {
 
+	if (gzouts->finished) throw "attempted to write with a finished Gzouts\n" ;
+
 	// begin the gz read process if necessary
-	if (! gzouts->begun) {
-
-		gzouts->begun = true ;
-
-		// open the file
-		gzouts->gzfile = gzopen(gzouts->file_path.c_str(), "w") ;
-		if (gzouts->gzfile == NULL) throw "could not open gzipped file, " + gzouts->file_path + "\n" ;
-
-		// set the internal gz buffer
-		bool check = gzbuffer(gzouts->gzfile, gzf_internal_buffer_bytes) ;
-		if (check) throw "could not set the zlib buffer\n" ;
-
-		// set the buffer terminal char
-		gzouts->buffer_last_byte = gzouts->buffer + gzf_char_buffer_size_bytes - 1 ;
-		gzouts->buffer_last_byte[0] = '\0' ;
-		gzouts->buffer_position = gzouts->buffer ;
-	} 
+	if (! gzouts->begun) gz_begin_gzouts(gzouts) ;
 
 	// fill the out buffer
 	for (string line : gzouts->line_vect) {
 
-		cout << "hello line size: " << line.size() << endl ;
-
-		int remaining_bytes = gzouts->buffer_last_byte - gzouts->buffer_position ;
-		cout << "remaining byes: " << remaining_bytes << endl ;
+		int remaining_bytes = gzouts->buffer_last_byte - gzouts->buffer_position + 1 ;
 
 		// does this line fit in the buffer
 		if (remaining_bytes < line.size() + 1) {
@@ -152,34 +149,14 @@ void gz_flush_close(Gzouts * gzouts) {
 	// flush the buffer
 	int bytes_to_write ;
 	char * terminal_char_ptr = strchr(gzouts->buffer, '\0') ;
+
 	if (terminal_char_ptr == NULL) bytes_to_write = gzf_char_buffer_size_bytes ;
 	else bytes_to_write = terminal_char_ptr - gzouts->buffer ;
+	
 	gzwrite(gzouts->gzfile, gzouts->buffer, bytes_to_write) ;
 
 	// finally flush and close the gzstream
 	gzclose(gzouts->gzfile) ;
-}
 
-int main(int argc, char ** argv) {
-
-	Gzins gzins ;
-	gzins.file_path = string(argv[1]) ;
-
-	Gzouts gzouts ;
-	gzouts.file_path = string(argv[2]) ;
-
-	while (true) {
-
-		gz_read_lines(&gzins) ;
-
-		for (string line : gzins.line_vect) {
-			gzouts.line_vect.push_back(line) ;
-		}
-
-		gz_write_lines(&gzouts) ;
-
-		if (gzins.finished) break ;
-	}
-
-	gz_flush_close(&gzouts) ;
+	gzouts->finished = true ;
 }

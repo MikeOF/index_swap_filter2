@@ -1,6 +1,7 @@
 #include "files.h"
 
 mode_t get_mode(std::string path) {
+
 	struct stat pstat ;
 	stat(path.c_str(), &pstat) ;
 
@@ -20,9 +21,7 @@ std::string get_parent_path(std::string path) {
 
 std::string get_absolute_path(std::string path) {
 
-	if (path.find('/') == 0) {
-		return path ;
-	}
+	if (path.find('/') == 0) return path ;
 
 	char buf [PATH_MAX] ;
 
@@ -41,6 +40,8 @@ bool file_exists(std::string path) {
 
 bool is_file(std::string path) {
 
+	if (!file_exists(path)) return false ;
+
 	mode_t pmode = get_mode(path) ;
 
 	return (S_IFREG & pmode) ;
@@ -48,12 +49,17 @@ bool is_file(std::string path) {
 
 bool is_dir(std::string path) {
 
+	if (!file_exists(path)) return false ;
+
 	mode_t pmode = get_mode(path) ;
 
 	return (S_IFDIR & pmode) ;
 }
 
 std::vector<std::string> get_dir_list(std::string path) {
+
+	if (!is_dir(path)) throw std::runtime_error ("attempt to read a non-directory path, " + path) ;
+	path = remove_trailing_slashes(path) ;
 
 	DIR * dir;
 	struct dirent * ent;
@@ -67,7 +73,7 @@ std::vector<std::string> get_dir_list(std::string path) {
 
 			std::string file_name = std::string(ent->d_name) ;
 
-			if (file_name != "." && file_name != "..") ret_vect.push_back(std::string(ent->d_name)) ;
+			if (file_name != "." && file_name != "..") ret_vect.push_back(path + "/" + std::string(ent->d_name)) ;
 
 		}
 		closedir (dir);

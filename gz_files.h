@@ -1,5 +1,5 @@
-#ifndef FILES_H
-#define FILES_H
+#ifndef GZ_FILES_H
+#define GZ_FILES_H
 
 #include <zlib.h>
 #include <iostream>
@@ -35,6 +35,7 @@ struct Gzouts {
 } ;
 
 void gz_read_lines(Gzins *) ;
+void gz_write_line(Gzouts *) ;
 void gz_write_lines(Gzouts *) ;
 void gz_flush_close(Gzouts *) ;
 

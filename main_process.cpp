@@ -15,7 +15,7 @@
 #include "whitelist.h"
 #include "task_pool.h"
 #include "read_id_barcodes.h"
-#include "suspect_barcodes.h"
+//#include "suspect_barcodes.h"
 
 void show_usage(std::string name) {
     std::cerr << "Usage: " 
@@ -127,7 +127,7 @@ int main(int argc, char ** argv) {
 
 	std::cout << "hello after run_tasks" << std::endl ;
 
-	write_out_suspect_barcodes(sample_keys, samples, workdir) ;
+	//write_out_suspect_barcodes(sample_keys, samples, workdir) ;
 
 	while(true) {std::cout << "hi" << std::endl; std::this_thread::sleep_for (std::chrono::seconds (5)) ;}
 

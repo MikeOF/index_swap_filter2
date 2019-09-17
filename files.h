@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdexcept>
 
 std::string get_parent_path(std::string) ;
 std::string get_absolute_path(std::string) ;
