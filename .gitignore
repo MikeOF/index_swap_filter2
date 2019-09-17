@@ -4,3 +4,5 @@ isf2*
 *.o
 gz_by_line
 *.fastq.gz
+gz_files
+*.gz
