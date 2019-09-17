@@ -102,35 +102,35 @@ void gz_write_lines(Gzouts * gzouts) {
 		if (check) throw "could not set the zlib buffer\n" ;
 
 		// set the buffer terminal char
-		gzouts->buffer[gzf_char_buffer_size_bytes-1] = '\0' ;
+		gzouts->buffer_last_byte = gzouts->buffer + gzf_char_buffer_size_bytes - 1 ;
+		gzouts->buffer_last_byte[0] = '\0' ;
 		gzouts->buffer_position = gzouts->buffer ;
 	} 
 
 	// fill the out buffer
-	char * buffer_last_byte = gzouts->buffer + gzf_char_buffer_size_bytes - 1 ;
 	for (string line : gzouts->line_vect) {
 
 		cout << "hello line size: " << line.size() << endl ;
 
-		int remaining_bytes = buffer_last_byte - gzouts->buffer_position + 1 ;
+		int remaining_bytes = gzouts->buffer_last_byte - gzouts->buffer_position ;
 		cout << "remaining byes: " << remaining_bytes << endl ;
 
 		// does this line fit in the buffer
 		if (remaining_bytes < line.size() + 1) {
 
 			// fill remainder of buffer
-			strcpy(gzouts->buffer_position, line.substr(0, remaining_bytes).c_str()) ; 
+			strncpy(gzouts->buffer_position, line.c_str(), remaining_bytes) ; 
 
 			// write out the buffer
 			gzwrite(gzouts->gzfile, gzouts->buffer, gzf_char_buffer_size_bytes) ;
 
 			line = line.substr(remaining_bytes) ;
 
-			buffer_position = gzouts->buffer ;
+			gzouts->buffer_position = gzouts->buffer ;
 		}
 
 		strcpy(gzouts->buffer_position, line.c_str()) ;
-		gzouts->buffer_position[line.size()] = \'n' ;
+		gzouts->buffer_position[line.size()] = '\n' ;
 		gzouts->buffer_position += line.size() + 1 ;
 	}
 
@@ -138,7 +138,7 @@ void gz_write_lines(Gzouts * gzouts) {
 	gzouts->line_vect.clear() ;
 
 	// add a terminating null
-	if (buffer_position != buffer_last_byte) buffer_position[1] = '\0' ;
+	gzouts->buffer_position[0] = '\0' ;
 }
 
 void gz_flush_close(Gzouts * gzouts) {

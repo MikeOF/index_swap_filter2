@@ -29,8 +29,9 @@ struct Gzouts {
 	bool begun = false ;
 	bool finished = false ;
 	vector<string> line_vect ;
-	char buffer [gzf_char_buffer_size_bytes] ;
 	char * buffer_position ;
+	char * buffer_last_byte ;
+	char buffer [gzf_char_buffer_size_bytes] ;
 } ;
 
 void gz_read_lines(Gzins *) ;
