@@ -4,11 +4,14 @@ using namespace std ;
 
 void gz_begin_gzins(Gzins * gzins) {
 
+	// check the status
+	if (gzins->begun) throw runtime_error("attempted to begin a Gzins twice") ;
+
 	gzins->begun = true ;
 
 	// open the file
 	gzins->gzfile = gzopen(gzins->file_path.c_str(), "r") ;
-	if (gzins->gzfile == NULL) throw "could not open gzipped file, " + gzins->file_path + "\n" ;
+	if (gzins->gzfile == NULL) throw runtime_error("could not open gzipped file, " + gzins->file_path) ;
 
 	// set the internal gz buffer
 	bool check = gzbuffer(gzins->gzfile, gzf_internal_buffer_bytes) ;
@@ -25,14 +28,17 @@ void gz_read_to_buffer(Gzins * gzins) {
 
 void gz_parse_lines(Gzins * gzins) {
 
-	if (! gzins->line_vect.empty()) throw "attempted to parse lines without an empty line_vect\n" ;
+	// check state of the line vect
+	if (!gzins->line_vect.empty()) throw "attempted to parse lines without an empty line_vect\n" ;
 
+	// initialzie the line start and end to first line values
 	char * line_start = gzins->buffer ;
 	char * line_end = strchr(line_start, '\n') ;
 
 	// get first line
 	if (line_end != NULL) line_end[0] = '\0' ;
-	string first_line = gzins->last_line_fragment + string(line_start) ; gzins->last_line_fragment = "" ;
+	string first_line = gzins->last_line_fragment + string(line_start) ; 
+	gzins->last_line_fragment = "" ;
 
 	// return if we found nothing, store the first line and continue if we found something
 	if (first_line.empty()) return ;
@@ -63,15 +69,19 @@ void gz_parse_lines(Gzins * gzins) {
 
 void gz_read_lines(Gzins * gzins) {
 
+	// check the status
+	if (!gzins->begun) throw runtime_error("attempted to read from an un-begun Gzins") ;
+	if (gzins->finished) throw runtime_error("attempted to read from a finished Gzins") ;
+
 	gzins->line_vect.clear() ;  // clear out any old lines
 
-	if (gzins->finished) return ;
-
 	// begin the gz read process if necessary
-	if (! gzins->begun) gz_begin_gzins(gzins) ;
+	if (!gzins->begun) gz_begin_gzins(gzins) ;
 
+	// fill local character buffer
 	gz_read_to_buffer(gzins) ;
 
+	// parse the lines from the buffer
 	gz_parse_lines(gzins) ;
 
 	// determine if the gz file is finished
@@ -84,79 +94,43 @@ void gz_read_lines(Gzins * gzins) {
 
 void gz_begin_gzouts(Gzouts * gzouts) {
 
+	// check the status
+	if (gzouts->begun) throw runtime_error("attempted to begin a Gzouts twice") ;
+
 	gzouts->begun = true ;
 
 	// open the file
 	gzouts->gzfile = gzopen(gzouts->file_path.c_str(), "w") ;
 	if (gzouts->gzfile == NULL) throw "could not open gzipped file, " + gzouts->file_path + "\n" ;
 
-	// set the internal gz buffer
+	// set the internal gz file buffer
 	bool check = gzbuffer(gzouts->gzfile, gzf_internal_buffer_bytes) ;
 	if (check) throw "could not set the zlib buffer\n" ;
-
-	// set the buffer terminal char
-	gzouts->buffer_last_byte = gzouts->buffer + gzf_char_buffer_size_bytes - 1 ;
-	gzouts->buffer_last_byte[0] = '\0' ;
-	gzouts->buffer_position = gzouts->buffer ;
 }
 
-void gz_write_lines(Gzouts * gzouts) {
+void gz_write_line(Gzouts * gzouts, string line) {
 
-	if (gzouts->finished) throw "attempted to write with a finished Gzouts\n" ;
+	// check the status
+	if (!gzouts->begun) throw runtime_error("attempted to write to an un-begun Gzouts") ;
+	if (gzouts->finished) throw runtime_error("attempted to write with a finished Gzouts") ;
 
-	// begin the gz read process if necessary
-	if (! gzouts->begun) gz_begin_gzouts(gzouts) ;
+	// send line the the gz file
+	gzwrite(gzouts->gzfile, line.c_str(), line.size()) ;
 
-	// fill the out buffer
-	for (string line : gzouts->line_vect) {
-
-		int remaining_bytes = gzouts->buffer_last_byte - gzouts->buffer_position + 1 ;
-
-		// does this line fit in the buffer
-		if (remaining_bytes < line.size() + 1) {
-
-			// fill remainder of buffer
-			strncpy(gzouts->buffer_position, line.c_str(), remaining_bytes) ; 
-
-			// write out the buffer
-			gzwrite(gzouts->gzfile, gzouts->buffer, gzf_char_buffer_size_bytes) ;
-
-			line = line.substr(remaining_bytes) ;
-
-			gzouts->buffer_position = gzouts->buffer ;
-		}
-
-		strcpy(gzouts->buffer_position, line.c_str()) ;
-		gzouts->buffer_position[line.size()] = '\n' ;
-		gzouts->buffer_position += line.size() + 1 ;
-	}
-
-	// clear out processed lines
-	gzouts->line_vect.clear() ;
-
-	// add a terminating null
-	gzouts->buffer_position[0] = '\0' ;
+	// add the newline character
+	char newline = '\n' ;
+	gzwrite(gzouts->gzfile, &newline, 1) ;
 }
 
 void gz_flush_close(Gzouts * gzouts) {
 
 	// begin the gz read process if necessary
-	if (! gzouts->begun) throw "attempted to flush and close an unopen gzouts\n" ;
+	if (!gzouts->begun) throw runtime_error("attempted to flush and close an unopen Gzouts") ;
+	if (gzouts->finished) throw runtime_error("attempted to flush a finished Gzouts") ;
 
-	// flush the line vect
-	gz_write_lines(gzouts) ;
-
-	// flush the buffer
-	int bytes_to_write ;
-	char * terminal_char_ptr = strchr(gzouts->buffer, '\0') ;
-
-	if (terminal_char_ptr == NULL) bytes_to_write = gzf_char_buffer_size_bytes ;
-	else bytes_to_write = terminal_char_ptr - gzouts->buffer ;
-	
-	gzwrite(gzouts->gzfile, gzouts->buffer, bytes_to_write) ;
-
-	// finally flush and close the gzstream
+	// flush and close the gzstream
 	gzclose(gzouts->gzfile) ;
 
+	// mark the gzouts finished
 	gzouts->finished = true ;
 }

@@ -43,14 +43,8 @@ std::stack<R> run_tasks(int threads, std::stack<Task<R, A>> task_stack) {
 
 			if (children[i].wait_for(wait_span) == std::future_status::ready) {
 
-				std::cout << "child " + std::to_string(i) + " is ready\n" ;
-
 				to_remove.push(i) ; return_stack.push(children[i].get()) ;
-
-			} else {
-
-				std::cout << "child " + std::to_string(i) + " is not ready\n" ;
-			}
+			} 
 		}
 
 		// remove completed children

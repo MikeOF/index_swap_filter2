@@ -28,15 +28,13 @@ struct Gzouts {
 	gzFile gzfile ;
 	bool begun = false ;
 	bool finished = false ;
-	vector<string> line_vect ;
-	char * buffer_position ;
-	char * buffer_last_byte ;
-	char buffer [gzf_char_buffer_size_bytes] ;
 } ;
 
+void gz_begin_gzins(Gzins *) ;
 void gz_read_lines(Gzins *) ;
-void gz_write_line(Gzouts *) ;
-void gz_write_lines(Gzouts *) ;
+
+void gz_begin_gzouts(Gzouts *) ;
+void gz_write_line(Gzouts *, string) ;
 void gz_flush_close(Gzouts *) ;
 
 #endif
