@@ -123,7 +123,7 @@ int main(int argc, char ** argv) {
 
 	run_tasks(threads, task_stack) ;
 
-	write_out_suspect_barcodes(sample_keys, samples, workdir, threads) ;
+	//write_out_suspect_barcodes(sample_keys, samples, workdir, threads) ;
 
 	return 0;
 }

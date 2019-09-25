@@ -56,7 +56,7 @@ int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
                 if (!v_cell_bc.empty()) {
 
                     std::stringstream ss;
-                    ss << v_cell_bc << umi << '\t' << read_id ;
+                    ss << v_cell_bc << umi << '\t' << std::to_string(seq_cnt) << '\t' << read_id ;
 
                     gz_write_line(&gz_output, ss.str()) ;
                 }

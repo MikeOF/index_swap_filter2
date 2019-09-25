@@ -18,6 +18,8 @@ struct Gzins {
 	gzFile gzfile ;
 	bool begun = false ;
 	bool finished = false ;
+	bool has_next = false ;
+	int line_index = 0 ;
 	vector<string> line_vect ;
 	string last_line_fragment = "" ;
 	char buffer [gzf_char_buffer_size_bytes] ;
@@ -31,8 +33,9 @@ struct Gzouts {
 } ;
 
 void gz_begin_gzins(Gzins *) ;
-void gz_read_lines(Gzins *) ;
+string gz_read_line(Gzins *) ;
 
+Gzouts gz_get_gzouts(std::string) ;
 void gz_begin_gzouts(Gzouts *) ;
 void gz_write_line(Gzouts *, string) ;
 void gz_flush_close(Gzouts *) ;

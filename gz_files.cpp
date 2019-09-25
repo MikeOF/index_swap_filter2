@@ -15,7 +15,15 @@ void gz_begin_gzins(Gzins * gzins) {
 
 	// set the internal gz buffer
 	bool check = gzbuffer(gzins->gzfile, gzf_internal_buffer_bytes) ;
-	if (check) throw "could not set the zlib buffer\n" ;
+	if (check) throw runtime_error("could not set the internal gzFile buffer") ;
+
+	// read in the first set of lines
+	gz_read_lines(gzins) ;
+
+	// determine if we have lines
+	if (gzins->line_vect.size() > 1 || gzins->last_line_fragment.size() > 1) {
+		gzins->has_next = true ;
+	}
 }
 
 void gz_read_to_buffer(Gzins * gzins) {
@@ -23,31 +31,46 @@ void gz_read_to_buffer(Gzins * gzins) {
 	// read in new chars to buffer
 	int bytes_read = gzread(gzins->gzfile, gzins->buffer, gzf_read_amount_bytes) ;
 
-	gzins->buffer[bytes_read] = '\0' ; // add terminal char
+	// add terminal char
+	gzins->buffer[bytes_read] = '\0' ;
 }
 
 void gz_parse_lines(Gzins * gzins) {
 
 	// check state of the line vect
-	if (!gzins->line_vect.empty()) throw "attempted to parse lines without an empty line_vect\n" ;
+	if (!gzins->line_vect.empty()) {
+		throw runtime_error("attempted to parse lines without an empty line_vect") ;
+	}
 
-	// initialzie the line start and end to first line values
+	// initialize the line start and end to first line values
 	char * line_start = gzins->buffer ;
 	char * line_end = strchr(line_start, '\n') ;
 
-	// get first line
+	// mark the end of the first line if necessary ;
 	if (line_end != NULL) line_end[0] = '\0' ;
-	string first_line = gzins->last_line_fragment + string(line_start) ; 
-	gzins->last_line_fragment = "" ;
 
-	// return if we found nothing, store the first line and continue if we found something
-	if (first_line.empty()) return ;
-	gzins->line_vect.push_back(first_line) ;
+	// parse first set of bytes
+	string first_string = string(line_start) ; 
 
-	// parse more lines if necessary
-	if (line_end == NULL) return ;
+	// return if we didn't find any new characters
+	if (first_string.empty()) {
+
+		gzins->line_vect.push_back(gzins->last_line_fragment) ;
+		gzins->last_line_fragment = "" ;
+		return ;
+	}
+
+	// return if we didn't find a newline character
+	if (line_end == NULL) {
+		gzins->last_line_fragment = gzins->last_line_fragment + first_string ; 
+		return ;
+	}
+
+	//  store the first line and continue
+	gzins->line_vect.push_back(gzins->last_line_fragment + first_string) ;
+
+	// parse more lines
 	line_start = line_end + 1 ;
-
 	while(true) {
 
 		// search for the next newline char
@@ -75,9 +98,6 @@ void gz_read_lines(Gzins * gzins) {
 
 	gzins->line_vect.clear() ;  // clear out any old lines
 
-	// begin the gz read process if necessary
-	if (!gzins->begun) gz_begin_gzins(gzins) ;
-
 	// fill local character buffer
 	gz_read_to_buffer(gzins) ;
 
@@ -89,7 +109,33 @@ void gz_read_lines(Gzins * gzins) {
 
 		gzins->finished = true ; 
 		gzclose(gzins->gzfile) ;
+		break ;
 	}
+}
+
+string& gz_read_line(Gzins * gzins) {
+
+	// check the status
+	if (!gzins->begun) throw runtime_error("attempted to read from an un-begun Gzins") ;
+	if (!gzins->has_next) throw runtime_error("attempted to read from a Gzins without more lines") ;
+
+	while (gzins->line_index == gzins->line_vect.size()) {
+
+		if (gzins->finished) gzins->has_next = false ; return ;
+
+		gz_read_lines(Gzins * gzins) ;
+		gzins->line_index = 0 ;
+	}
+
+	gzins->line_index++ ;
+
+	return gzins->line_vect.at(gzins->line_index - 1) ;
+}
+
+Gzouts gz_get_gzouts(string file_path) {
+	Gzouts gzouts ;
+	gzouts.file_path = file_path ;
+	return gzouts ;
 }
 
 void gz_begin_gzouts(Gzouts * gzouts) {
