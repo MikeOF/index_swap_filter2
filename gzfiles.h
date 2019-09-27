@@ -17,6 +17,10 @@ const int gzf_internal_buffer_bytes = 512000 ;
 
 class Gzin {
 
+	static const int read_amount_bytes = 256000 ;
+	static const int char_buffer_size_bytes = 256000 + 1 ;
+	static const int internal_buffer_bytes = 512000 ;
+
 	string file_path ;
 	gzFile gzfile ;
 
@@ -40,7 +44,7 @@ class Gzin {
 
 	    Gzin(const Gzin&) = delete ; // disable copy construction
 
-	    ~Gzin(void) ;
+	    ~Gzin() ;
 
 		string read_line() ;
 		bool has_next_line() const { return has_next ; }

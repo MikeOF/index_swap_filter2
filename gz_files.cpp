@@ -15,7 +15,7 @@ Gzin::Gzin (const string& afile_path) {
 	}
 
 	// set the internal gz buffer
-	bool check = gzbuffer(this->gzfile, Gzin::internal_buffer_bytes) ;
+	bool check = gzbuffer(this->gzfile, gzf_internal_buffer_bytes) ;
 	if (check) throw runtime_error("could not set the internal gzFile buffer") ;
 	
 	// initialize control variables
@@ -28,7 +28,7 @@ Gzin::Gzin (const string& afile_path) {
 	this->buffer_bytes = 0 ;
 
 	// initialize the buffer
-	this->buffer = new char[Gzin::char_buffer_size_bytes] ;
+	this->buffer = new char[gzf_char_buffer_size_bytes] ;
 
 	// read in the first set of bytes
 	this->read_to_buffer() ;
@@ -42,19 +42,12 @@ Gzin::Gzin (const string& afile_path) {
 	}
 }
 
-Gzin::~Gzin () {
-
-	delete this->gzfile ;
-	delete this->buffer ;
-	delete this ;
-}
-
 void Gzin::read_to_buffer() {
 
 	if (this->finished) throw runtime_error("attempted to read from a finished Gzins") ;
 
 	// read in new chars to buffer
-	this->buffer_bytes = gzread(this->gzfile, this->buffer, Gzin::read_amount_bytes) ;
+	this->buffer_bytes = gzread(this->gzfile, this->buffer, gzf_read_amount_bytes) ;
 
 	if (this->buffer_bytes < 0) throw runtime_error("error reading from gz file, " + this->file_path) ;
 
