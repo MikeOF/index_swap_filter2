@@ -6,3 +6,4 @@ gz_by_line
 *.fastq.gz
 gz_files
 *.gz
+*.a

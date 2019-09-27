@@ -12,16 +12,20 @@
 #include <dirent.h>
 #include <stdexcept>
 
-std::string get_parent_path(std::string) ;
-std::string get_absolute_path(std::string) ;
-bool file_exists(std::string) ;
-bool is_file(std::string) ;
-bool is_dir(std::string) ;
-std::vector<std::string> get_dir_list(std::string) ;
-bool dir_is_empty(std::string) ;
-std::string get_filename(std::string) ;
-std::string get_file_stem(std::string) ;
-std::string remove_trailing_slashes(std::string) ;
-void make_dir(std::string) ;
+using namespace std ;
+
+string get_parent_path(string) ;
+string get_absolute_path(string) ;
+bool file_exists(string) ;
+bool is_file(string) ;
+bool is_dir(string) ;
+vector<string> get_dir_list(string) ;
+bool dir_is_empty(string) ;
+string get_filename(string) ;
+string get_file_stem(string) ;
+string remove_trailing_slashes(string) ;
+void make_dir(string) ;
+void remove_file(string) ;
+void remove_dir_recursively(string) ;
 
 #endif
