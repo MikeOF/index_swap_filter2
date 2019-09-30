@@ -4,6 +4,7 @@ using namespace std ;
 
 Sample::Sample (const string& sample_def) {
 
+	// parse sample definition into tokens
 	vector<string> tokens ;
 	string token ;
 	istringstream token_stream(sample_def) ;
@@ -20,15 +21,15 @@ Sample::Sample (const string& sample_def) {
 	star_reference_path = tokens[4] ;
 
 	// check paths
-	if (!is_file(whitelist_path)) {
+	if (!Path(whitelist_path).is_file()) {
 		throw runtime_error ("For Sample Def: " + sample_def 
 		+ "\n\tWhitelist Path: " + whitelist_path + ", is not a file") ;
 	}
-	if (!is_dir(fastq_dir_path)) {
+	if (!Path(fastq_dir_path).is_dir()) {
 		throw runtime_error ("For Sample Def: " + sample_def 
 		+ "\n\tFastq Dir Path: " + fastq_dir_path + ", is not a directory") ;
 	}
-	if (!is_dir(star_reference_path)) {
+	if (!Path(star_reference_path).is_dir()) {
 		throw runtime_error ("For Sample Def: " + sample_def 
 		+ "\n\tStar Reference Path: " + star_reference_path + ", is not a directory") ;
 	}
@@ -62,24 +63,26 @@ Sample::Sample (const string& sample_def) {
 	}
 
 	// collect barcode and sequence fastqs
-	vector<string> file_paths = get_dir_list(fastq_dir_path) ;
+	vector<string> file_paths = Path(fastq_dir_path).get_dir_list() ;
 
-	for (string file_path : file_paths) {
+	for (string file_path_str : file_paths) {
 
-		if (is_file(file_path)) {
+		Path file_path = Path(file_path_str) ;
 
-			string file_name = get_filename(file_path) ;
+		if (file_path.is_file()) {
+
+			string filename = file_path.get_filename() ;
 
 			// check if this is a fastq for this sample
-			if (file_name.substr(0, sample_name.size()) != sample_name) continue ;
-			if (file_name.find(".fastq.gz") != file_name.size() - 9) continue ;
+			if (filename.substr(0, sample_name.size()) != sample_name) continue ;
+			if (filename.find(".fastq.gz") != filename.size() - 9) continue ;
 
 			// add to the appropriate vector
-			if (file_name.find(barcode_fq_pattern) != string::npos) {
-				barcode_fastq_paths.push_back(file_path) ;
+			if (filename.find(barcode_fq_pattern) != string::npos) {
+				barcode_fastq_paths.push_back(file_path_str) ;
 
-			} else if (file_name.find(sequence_fq_pattern) != string::npos) {
-				sequence_fastq_paths.push_back(file_path) ;
+			} else if (filename.find(sequence_fq_pattern) != string::npos) {
+				sequence_fastq_paths.push_back(file_path_str) ;
 			}
 		}
 	}
@@ -90,14 +93,10 @@ Sample::Sample (const string& sample_def) {
 
 	if (sequence_fastq_paths.size() == 0) throw runtime_error (
 		"No sequence fastqs found for " + project_name + " " + sample_name) ;
-}
 
-string Sample::parse_cell_barcode(const string& barcode) {
-	return barcode.substr(cell_bc_start, cell_bc_len) ;
-}
-
-string Sample::parse_umi(const string& barcode) {
-	return barcode.substr(umi_start, umi_len) ;
+	// make sure we found the same number of barcode and sequence fastqs
+	if (barcode_fastq_paths.size() != sequence_fastq_paths.size()) throw runtime_error(
+		"different numbers of barcode and sequence fastqs were found for " + project_name + " " + sample_name) ;
 }
 
 string Sample::to_string() {

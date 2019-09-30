@@ -1,42 +1,35 @@
-#include "read_id_barcodes.h"
+#include "barcode_read_ids.h"
 
 using namespace std ;
 
-int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
+int extract_barcode_read_ids(Task<int, Extract_barcode_read_ids_args> task) {
 
     // parse arguments
-	string read_id_barcodes_path = task.args.read_id_barcodes_path ;
+	string barcode_read_ids_path = task.args.barcode_read_ids_path ;
 	string fastq_path = task.args.fastq_path ;
-	Sample sample = * task.args.sample_ptr ; 
+	Sample& sample = * task.args.sample_ptr ; 
 
     // create the whitelist
 	Whitelist wlist = Whitelist(sample.get_whitelist_path()) ;
-
-	// create the output writer
-    Gzouts gz_output ;
-    gz_output.file_path = read_id_barcodes_path ;
-    gz_begin_gzouts(&gz_output) ;
 
 	// log activity
     string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
 	cout << log_header + "reading read-ids and barcodes from " + fastq_path + "\n";
 
+    // create the output writer
+    Gzout gzout = Gzout(barcode_read_ids_path) ;
+
 	// create the input reader
-    Gzins gz_input ;
-    gz_input.file_path = fastq_path ;
-    gz_begin_gzins(&gz_input) ;
+    Gzin gzin (fastq_path) ;
 
     // lines
     string lines[4] ;
     int idx = 0 ;
     int seq_cnt = 0 ;
 
-    while (gz_input.has_next) {
+    while (gzin.has_next_line()) {
 
-        string line = gz_read_line(&gz_input) ;
-
-
-        lines[idx++] = line ;
+        lines[idx++] = gzin.read_line() ;
 
         if (idx == 4) { // then we have a complete sequence
             idx = 0;
@@ -57,12 +50,12 @@ int read_id_barcodes(Task<int, Read_id_barcodes_args> task) {
                 stringstream ss;
                 ss << v_cell_bc << umi << '\t' << to_string(seq_cnt) << '\t' << read_id ;
 
-                gz_write_line(&gz_output, ss.str()) ;
+                gzout.write_line(ss.str()) ;
             }
         }
     }
 
-	gz_flush_close(&gz_output) ;
+	gzout.flush_close() ;
     cout << log_header + to_string(seq_cnt) + " sequences read from " + fastq_path + "\n" ;
 
     return 0 ;

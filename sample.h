@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 
-#include "files.h"
+#include "path.h"
 
 using namespace std ;
 
@@ -24,21 +24,19 @@ class Sample {
 	public:
 
 		Sample (const string&) ;
-		Sample (const Sample& other) = delete ; // disable copy construction
 
 		string get_project_name() const { return project_name ; }
 		string get_sample_name() const { return sample_name ; }
-		string get_whitelist_path() const { return string(whitelist_path) ; }
-		string get_fastq_dir_path() const { return string(fastq_dir_path) ; }
-		string get_star_reference_path() const { return string(star_reference_path) ; }
+		string get_whitelist_path() const { return whitelist_path ; }
+		string get_fastq_dir_path() const { return fastq_dir_path ; }
+		string get_star_reference_path() const { return star_reference_path ; }
 		string get_key() const { return sample_name + "_" + project_name ; }
 		vector<string> get_barcode_fastq_paths() const { return barcode_fastq_paths ; } 
 		vector<string> get_sequence_fastq_paths() const { return sequence_fastq_paths ; } 
 
-		string parse_cell_barcode(const string&) ;
-		string parse_umi(const string&) ;
+		string parse_cell_barcode(const string& barcode) { return barcode.substr(cell_bc_start, cell_bc_len) ; }
+		string parse_umi(const string& barcode) { return barcode.substr(umi_start, umi_len) ; }
 		string to_string() ;
-
 };
 
 #endif

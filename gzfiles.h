@@ -2,18 +2,14 @@
 #define GZ_FILES_H
 
 #include <zlib.h>
-#include <iostream>
 #include <string>
 #include <vector>
+#include <dirent.h>
 #include <cstring>
 
-#include "files.h"
+#include "path.h"
 
 using namespace std ;
-
-const int gzf_read_amount_bytes = 256000 ;
-const int gzf_char_buffer_size_bytes = gzf_read_amount_bytes + 1 ;
-const int gzf_internal_buffer_bytes = 512000 ;
 
 class Gzin {
 
@@ -48,18 +44,40 @@ class Gzin {
 
 		string read_line() ;
 		bool has_next_line() const { return has_next ; }
-} ;
+};
 
-struct Gzouts {
+class Gzout {
+
+	static const int internal_buffer_bytes = 512000 ;
+
 	string file_path ;
 	gzFile gzfile ;
-	bool begun = false ;
 	bool finished = false ;
-} ;
 
-Gzouts gz_get_gzouts(string) ;
-void gz_begin_gzouts(Gzouts *) ;
-void gz_write_line(Gzouts *, string) ;
-void gz_flush_close(Gzouts *) ;
+	public:
+
+		Gzout() ;
+		Gzout(const string&) ;
+
+		void write_line(const string&) ;
+		void flush_close() ;
+};
+
+class GzChunkout {
+
+	const int chunk_size = 20000000 ;
+	const int dir_limit = 50 ;
+
+	string dir_path ;
+	vector<string> file_vect ;
+	Gzout gzout ;
+
+	public:
+
+		GzChunkout(const string&) ;
+
+		void write_line(const string&) ;
+		void flush_close() ;
+};
 
 #endif

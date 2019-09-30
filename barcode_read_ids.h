@@ -12,15 +12,17 @@
 #include "whitelist.h"
 #include "workdir.h"
 #include "task_pool.h"
-#include "gz_files.h"
-#include "files.h"
+#include "gzfiles.h"
+#include "path.h"
 
-struct Read_id_barcodes_args {
-	std::string read_id_barcodes_path ;
-	std::string fastq_path ;
+using namespace std ;
+
+struct Extract_barcode_read_ids_args {
+	string barcode_read_ids_path ;
+	string fastq_path ;
 	Sample * sample_ptr ;
 };
 
-int read_id_barcodes(Task<int, Read_id_barcodes_args>) ;
+int extract_barcode_read_ids(Task<int, Extract_barcode_read_ids_args>) ;
 
 #endif

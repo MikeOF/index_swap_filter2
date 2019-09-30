@@ -6,28 +6,29 @@
 #include <unordered_map>
 #include <vector>
 
-#include "files.h"
+#include "path.h"
 #include "sample.h"
+
+using namespace std ;
 
 class Workdir {
 
-	std::string base_dir_path ;
-	std::unordered_map<std::string, std::string> sample_dir_by_sample_key ;
-	std::unordered_map<std::string, std::unordered_map<std::string, std::string>> read_id_barcodes_path_by_fastq_path_by_sample_key ;
-	std::unordered_map<std::string, std::string> suspect_read_ids_path_by_sample_key ;
-	std::unordered_map<std::string, std::string> swapped_in_read_ids_path_by_sample_key ; 
-	std::vector<std::string> sample_keys ;
+	Path base_dir_path ;
+	unordered_map<string, Path> sample_dir_by_sample_key ;
+	unordered_map<string, unordered_map<string, string>> barcode_read_ids_path_by_fastq_path_by_sample_key ;
+	unordered_map<string, string> suspect_read_ids_path_by_sample_key ;
+	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
+	vector<string> sample_keys ;
 
 	public:
 
-		Workdir (std::string, std::unordered_map<std::string, Sample>) ;
+		Workdir (Path, const unordered_map<string, Sample>&) ;
 
+		vector<string> get_sample_keys() { return sample_keys ; }
 
-		std::vector<std::string> get_sample_keys() { return std::vector<std::string> (sample_keys) ; }
-
-		std::string get_read_id_barcodes_path(std::string, std::string) ;
-		std::string get_suspect_read_ids_path(std::string) ;
-		std::string get_swapped_in_read_ids_path(std::string) ;
+		string get_barcode_read_ids_path(string, string) ;
+		string get_suspect_read_ids_path(string) ;
+		string get_swapped_in_read_ids_path(string) ;
 } ;
 
 #endif

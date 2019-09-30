@@ -2,11 +2,11 @@
 
 using namespace std ;
 
-Gzin::Gzin (const string& afile_path) {
+Gzin::Gzin (const string& file_path) {
 
 	// check the file path 
-	this->file_path = afile_path ;
-	if (!is_file(this->file_path)) runtime_error("file not found, " + this->file_path) ;
+	this->file_path = string(file_path) ;
+	if (!Path(this->file_path).is_file()) runtime_error("file not found, " + this->file_path) ;
 
 	// open the file
 	this->gzfile  = gzopen(this->file_path.c_str(), "r") ;
@@ -42,12 +42,7 @@ Gzin::Gzin (const string& afile_path) {
 	}
 }
 
-Gzin::~Gzin () {
-
-	delete this->gzfile ;
-	delete this->buffer ;
-	delete this ;
-}
+Gzin::~Gzin () { delete this->buffer ; }
 
 void Gzin::read_to_buffer() {
 
@@ -125,7 +120,7 @@ void Gzin::parse_lines() {
 
 		line_end[0] = '\0' ; 
 
-		this->line_vect.push_back(string(line_start)) ;
+		this->line_vect.emplace_back(line_start) ;
 
 		line_start = line_end + 1 ; 
 	}
@@ -167,51 +162,39 @@ string Gzin::read_line() {
 	return this->line_vect.at(this->line_index - 1) ;
 }
 
-Gzouts gz_get_gzouts(string file_path) {
-	Gzouts gzouts ;
-	gzouts.file_path = file_path ;
-	return gzouts ;
-}
+Gzout::Gzout(const string& file_path) {
 
-void gz_begin_gzouts(Gzouts * gzouts) {
-
-	// check the status
-	if (gzouts->begun) throw runtime_error("attempted to begin a Gzouts twice") ;
-
-	gzouts->begun = true ;
+	this->file_path = string(file_path) ;
 
 	// open the file
-	gzouts->gzfile = gzopen(gzouts->file_path.c_str(), "w") ;
-	if (gzouts->gzfile == NULL) throw runtime_error("could not open gzipped file, " + gzouts->file_path) ;
+	this->gzfile = gzopen(this->file_path.c_str(), "w") ;
+	if (this->gzfile == NULL) throw runtime_error("could not open gzipped file, " + this->file_path) ;
 
 	// set the internal gz file buffer
-	bool check = gzbuffer(gzouts->gzfile, gzf_internal_buffer_bytes) ;
+	bool check = gzbuffer(this->gzfile, Gzout::internal_buffer_bytes) ;
 	if (check) throw runtime_error("could not set the zlib buffer") ;
-}
+} 
 
-void gz_write_line(Gzouts * gzouts, string line) {
+void Gzout::write_line(const string& line) {
 
 	// check the status
-	if (!gzouts->begun) throw runtime_error("attempted to write to an un-begun Gzouts") ;
-	if (gzouts->finished) throw runtime_error("attempted to write with a finished Gzouts") ;
+	if (this->finished) throw runtime_error("attempted to write with a finished Gzouts") ;
 
 	// send line the the gz file
-	gzwrite(gzouts->gzfile, line.c_str(), line.size()) ;
+	gzwrite(this->gzfile, line.c_str(), line.size()) ;
 
 	// add the newline character
-	char newline = '\n' ;
-	gzwrite(gzouts->gzfile, &newline, 1) ;
+	char newline = '\n' ; gzwrite(this->gzfile, &newline, 1) ;
 }
 
-void gz_flush_close(Gzouts * gzouts) {
+void Gzout::flush_close() {
 
 	// begin the gz read process if necessary
-	if (!gzouts->begun) throw runtime_error("attempted to flush and close an unopen Gzouts") ;
-	if (gzouts->finished) throw runtime_error("attempted to flush a finished Gzouts") ;
+	if (this->finished) throw runtime_error("attempted to flush a finished Gzouts") ;
 
 	// flush and close the gzstream
-	gzclose(gzouts->gzfile) ;
+	gzclose(this->gzfile) ;
 
 	// mark the gzouts finished
-	gzouts->finished = true ;
+	this->finished = true ;
 }
