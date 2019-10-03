@@ -2,6 +2,7 @@
 #define PATH_H
 
 #include <vector>
+#include <sstream>
 #include <cstdio>
 #include <string>
 #include <sys/types.h>
@@ -13,19 +14,15 @@ using namespace std ;
 
 class Path {
 
-	string path ;
-	string abs_path ;
-	bool p_exists = false ;
-	bool has_mode = false ; 
-	mode_t mode ;
+	string abs_path_str ;
 
-	void set_mode() ;
+	string get_absolute_path_str(const string&) ;
 
 	public:
 
-		Path() { path = "." ; }
+		Path() ;
 
-		Path(string) ;
+		Path(const string&) ;
 
 		// existence and type
 		bool exists() ;
@@ -34,6 +31,9 @@ class Path {
 
 		// file operations
 		void remove_file() ;
+		void rename(const Path&, bool) ;
+		void rename(const string&, bool) ;
+		void rename(const Path&) ;
 		void rename(const string&) ;
 
 		// dir operations 
@@ -44,9 +44,9 @@ class Path {
 
 		// path operations
 		bool is_absolute() ;
-		string to_string() { return this->path ; }
+		string to_string() { return this->abs_path_str ; }
+		string to_relative_path_string() ;
 		Path get_parent_path() ;
-		Path get_absolute_path() ;
 		string get_filename() ;
 		string get_filename_stem() ;
 		Path join(const string&) ;

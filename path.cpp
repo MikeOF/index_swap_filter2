@@ -2,87 +2,110 @@
 
 using namespace std ;
 
-Path::Path(string path) {
+Path::Path(const string& path_str) {
 
 	// make sure the path isn't empty
-	if (path.empty()) throw runtime_error("the path string is empty") ;
+	if (path_str.empty()) throw runtime_error("the path string is empty") ;
 
 	// remove trailing slashes 	
-	while (path.at(path.size() - 1) == '/') { path = path.substr(0, path.size() - 1) ; }
+	while (path_str.at(path_str.size() - 1) == '/') { path_str = path_str.substr(0, path_str.size() - 1) ; }
 
 	// remove double slashes
-	while (path.find("//") != string::npos) { path = path.replace(path.find("//"), 2, "/") ; }
+	while (path_str.find("//") != string::npos) { path_str = path_str.replace(path_str.find("//"), 2, "/") ; }
 
-	this->path = string(path) ;
+	if (path_str.at(0) == '/') { 
 
-	if (this->path.at(0) == '/') this->abs_path = this->path ;
+		this->abs_path_str = path_str ; 
+
+	} else {
+
+		this->abs_path_str = get_absolute_path_str(path_str) ;
+	}
+}
+
+string Path::get_absolute_path_str(const string& path_str) {
+
+	char buf [PATH_MAX] ;
+
+	getcwd(buf, PATH_MAX) ;
+
+	string abs_path_str = string(buf) + "/" + path_str ;
+
+	return abs_path_str ;
 }
 
 // existence and type
 
-void Path::set_mode() {
+bool Path::exists() { 
 
-	struct stat pstat ;
-	int result = stat(this->path.c_str(), &pstat) ;
-
-	this->p_exists = (result == 0) ;
-	this->mode = pstat.st_mode ;
-	this->has_mode = true ;
-}
-
-bool Path::exists() {
-
-	this->set_mode() ;
-	return this->p_exists ;
+	return stat(this->abs_path_str.c_str(), &pstat) == 0 ; 
 }
 
 bool Path::is_file() {
 
-	this->set_mode() ;
-	return (S_IFREG & this->mode) ;
+	struct stat pstat ;
+	int result = stat(this->abs_path_str.c_str(), &pstat) ;
+
+	return result == 0 && S_IFREG & pstat.st_mode ;
 }
 
 bool Path::is_dir() {
 
-	this->set_mode() ;
-	return (S_IFDIR & this->mode) ;
+	struct stat pstat ;
+	int result = stat(this->abs_path_str.c_str(), &pstat) ;
+
+	return result == 0 && S_IFDIR & pstat.st_mode ;
 }
 
 // file operations
 
 void Path::remove_file() {
 
-	if (!this->is_file()) throw runtime_error("attempt to file-remove a non-file path, " + this->path) ;
+	if (!this->is_file()) throw runtime_error("attempt to file-remove a non-file path, " + this->abs_path_str) ;
 
-	int result = remove(this->path.c_str()) ;
-	if (result) throw runtime_error("could not remove the file, " + this->path) ;
+	int result = remove(this->abs_path_str.c_str()) ;
+	if (result) throw runtime_error("could not remove the file, " + this->abs_path_str) ;
 }
 
-void rename(const Path& new_path, bool exists_ok) {
+void Path::rename(const Path& new_path, bool exists_ok) {
 
-	if (!exists_ok && new_path.exists()) runtime_error("cannot overwrite this path") ;
+	bool new_path_exists = new_path.exists() ;
 
-	if (this->exists())
+	if (new_path_exists) {
+		
+		if (!exists_ok) runtime_error("cannot overwrite this path") ;
+		if (new_path.is_dir()) throw runtime_error("cannot rename to an existant directory") ;
+	}
+
+	bool this_exists = this->exists() ;
+
+	if (this_exists) { 
+
+		rename(this->abs_path_str.c_str(), new_path.abs_path_str.c_str()) ;
+
+	} else if (new_path_exists) {
+
+		new_path.remove_file() ;
+	}
  
-	this->path = new_path.to_string() ;
-	this->abs_path = this->get_absolute_path() ;
+	this->abs_path_str = new_path.abs_path_str ;
 }
 
-void rename(const string& new_path_str, bool exists_ok) { this->rename(Path(new_path_str), exists_ok) ; }
-void rename(const Path& new_path) { this->rename(new_path, false) ; }
-void rename(const string& new_path_str) { this->rename(Path(new_path_str), false) ; }
+void Path::rename(const string& new_path_str, bool exists_ok) { this->rename(Path(new_path_str), exists_ok) ; }
+void Path::rename(const Path& new_path) { this->rename(new_path, false) ; }
+void Path::rename(const string& new_path_str) { this->rename(Path(new_path_str), false) ; }
 
 // dir operations 
 
 vector<string> Path::get_dir_list() {
 
-	if (!this->is_dir()) throw runtime_error ("attempt to read a non-directory path, " + this->path) ;
+	if (!this->is_dir()) throw runtime_error ("attempt to read a non-directory path, " + this->abs_path_str) ;
 
 	DIR * dir;
 	struct dirent * ent;
 	vector<string> ret_vect ;
 
-	if ((dir = opendir(this->path.c_str())) != NULL) {
+	if ((dir = opendir(this->abs_path_str.c_str())) != NULL) {
 
 		/* collect all the files and directories within directory */
 
@@ -90,7 +113,7 @@ vector<string> Path::get_dir_list() {
 
 			string file_name = string(ent->d_name) ;
 
-			if (file_name != "." && file_name != "..") ret_vect.push_back(this->path + "/" + string(ent->d_name)) ;
+			if (file_name != "." && file_name != "..") ret_vect.push_back(this->abs_path_str + "/" + string(ent->d_name)) ;
 
 		}
 		closedir (dir);
@@ -114,13 +137,13 @@ void Path::make_dir() {
 
 	if (this->exists()) throw runtime_error("attempt to make a dir at an existant path") ; 
 
-	int rval = mkdir(this->path.c_str(),  0777) ;
+	int rval = mkdir(this->abs_path_str.c_str(),  0777) ;
 	if (rval) throw runtime_error("Could not make directory: " + path) ;
 }
 
 void Path::remove_dir_recursively() {
 
-	if (!this->is_dir()) throw runtime_error("attempt to recursively remove a non-directory path, " + this->path) ;
+	if (!this->is_dir()) throw runtime_error("attempt to recursively remove a non-directory path, " + this->abs_path_str) ;
 
 	for (string sub_path_str : this->get_dir_list()) {
 		Path sub_path = Path(sub_path_str) ;
@@ -128,46 +151,79 @@ void Path::remove_dir_recursively() {
 		else { sub_path.remove_file() ; }
 	}
 
-	int result = rmdir(this->path.c_str()) ;
-	if (result) throw runtime_error("could not remove the directory, " + this->path) ;
+	int result = rmdir(this->abs_path_str.c_str()) ;
+	if (result) throw runtime_error("could not remove the directory, " + this->abs_path_str) ;
 }
 
 // path operations
 
-bool Path::is_absolute() { 
+string Path::get_relative_path_str() { 
 
-	return this->path.at(0) == '/' ; 
+	// tvars
+	string token ;
+	istringstream token_stream ;
+
+	char buf [PATH_MAX] ;
+	getcwd(buf, PATH_MAX) ;
+	Path cwd_path = Path(string(buf)) ;
+
+	// tokenize cwd
+	vector<string> cwd_tokens ; 
+	token_stream = istringstream(cwd_path.abs_path_str) ;
+	while (getline(token_stream, token, '/')) cwd_tokens.push_back(token) ;
+
+	// tokenize abs path str
+	vector<string> this_tokens ; 
+	token_stream = istringstream(this->abs_path_str) ;
+	while (getline(token_stream, token, '/')) this_tokens.push_back(token) ;
+
+	// create a relative path of tokens
+	<string> relative_path_tokens;
+
+	// get the number of shared tokens ?
+	int shared_tokens = 0 ;
+	for (int i = 0; i < cwd_tokens.size() && i < this_tokens.size(); i++) {
+		if (cwd_tokens.at(i) == this_tokens.at(i)) shared_tokens++ ;
+		else { break ; }
+	}
+
+	// add .. tokens
+	for (int i = shared_tokens; i < cwd_tokens.size(); i++) {
+		relative_path_tokens.push_back("..") ;
+	}
+
+	// add this tokens
+	for (int i = shared_tokens; i < this_tokens.size(); i++) {
+		relative_path_tokens.push_back(this_tokens.at(i + shared_tokens)) ;
+	}
+
+	if (relative_path_tokens.size() == 0) return "." ;
+
+	// create the relative path string from tokens
+	stringstream ss;
+	ss << relative_path_tokens.at(0) ;
+	for (int i = 1; i < relative_path_tokens.size(); i++) {
+		ss << "/" << relative_path_tokens.at(i) ;
+	}
+
+	return ss.str() ;
 }
 
 Path Path::get_parent_path() {
 
-	int last_sep = this->path.rfind('/') ;
+	int last_sep = this->abs_path_str.rfind('/') ;
 
 	if (last_sep == string::npos) { return Path(".") ; } 
-	else { return Path(this->path.substr(0, last_sep)) ; }
-}
-
-Path Path::get_absolute_path() {
-
-	// check to see if we already have it
-	if (!this->abs_path.empty()) return Path(this->abs_path) ;
-
-	char buf [PATH_MAX] ;
-
-	getcwd(buf, PATH_MAX) ;
-
-	this->abs_path = string(buf) + "/" + path ;
-
-	return Path(this->abs_path) ;
+	else { return Path(this->abs_path_str.substr(0, last_sep)) ; }
 }
 
 string Path::get_filename() {
 
 	int last_sep = path.rfind('/') ;
 
-	if (last_sep == string::npos) { return string(this->path) ; }
+	if (last_sep == string::npos) { return string(this->abs_path_str) ; }
 
-	return this->path.substr(last_sep + 1) ;
+	return this->abs_path_str.substr(last_sep + 1) ;
 }
 
 string Path::get_filename_stem() {
@@ -184,7 +240,7 @@ string Path::get_filename_stem() {
 Path Path::join(Path& p) { 
 
 	if (p.is_absolute()) throw runtime_error("cannot append an absolute path") ;
-	return Path(this->path + "/" + p.to_string()) ; 
+	return Path(this->abs_path_str + "/" + p.to_string()) ; 
 }
 
 Path Path::join(const string& s) { 
