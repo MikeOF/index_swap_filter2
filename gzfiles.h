@@ -1,5 +1,5 @@
-#ifndef GZ_FILES_H
-#define GZ_FILES_H
+#ifndef GZFILES_H
+#define GZFILES_H
 
 #include <zlib.h>
 #include <string>
@@ -58,23 +58,6 @@ class Gzout {
 
 		Gzout() ;
 		Gzout(const string&) ;
-
-		void write_line(const string&) ;
-		void flush_close() ;
-};
-
-class GzChunkout {
-
-	const int chunk_size = 20000000 ;
-	const int dir_limit = 50 ;
-
-	string dir_path ;
-	vector<string> file_vect ;
-	Gzout gzout ;
-
-	public:
-
-		GzChunkout(const string&) ;
 
 		void write_line(const string&) ;
 		void flush_close() ;

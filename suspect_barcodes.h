@@ -3,34 +3,23 @@
 
 #include <iostream>
 #include <vector>
+#include <tuple>
+#include <stack>
 #include <string>
-#include <thread>
-#include <chrono>
-#include <fstream>
 #include <unordered_map>
-#include <unordered_set>
-#include <sstream>
 
-#include "gz_files.h"
-#include "sample.h"
-#include "workdir.h"
+#include "gzfiles.h"
 #include "task_pool.h"
 
-// struct Suspect_barcodes {
-// 	std::string sample_key ;
-// 	std::unordered_set<std::string> barcodes ; 
-// } ;
+using namespace std ;
 
-struct Get_all_barcodes_args {
-	std::unordered_set<std::string> * suspect_barcodes_ptr ;
-	Sample * sample_ptr ;
-	Workdir * workdir_ptr ;
+struct Write_out_suspect_barcodes_args {
+	unordered_map<string, string> suspect_barcodes_path_by_sample_key ;
+	unordered_map<string, string> sorted_barcode_read_ids_path_by_sample_key ;
+	unordered_map<string, tuple<string, string>> sample_name_project_name_by_sample_key ;
+	function<string (string)> key_getter ;
 } ;
 
-void write_out_suspect_barcodes(std::vector<std::string>, std::unordered_map<std::string, Sample>, Workdir, int) ;
-
-int get_all_barcodes(Task<int, Get_all_barcodes_args>) ;
-
-// int write_out_barcodes(Task<int>) ;
+int write_out_suspect_barcodes(Task<int, Write_out_suspect_barcodes_args>) ;
 
 #endif

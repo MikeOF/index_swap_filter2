@@ -32,19 +32,19 @@ void Path::set_mode() {
 
 bool Path::exists() {
 
-	if (!this->has_mode) this->set_mode() ;
+	this->set_mode() ;
 	return this->p_exists ;
 }
 
 bool Path::is_file() {
 
-	if (!this->has_mode) this->set_mode() ;
+	this->set_mode() ;
 	return (S_IFREG & this->mode) ;
 }
 
 bool Path::is_dir() {
 
-	if (!this->has_mode) this->set_mode() ;
+	this->set_mode() ;
 	return (S_IFDIR & this->mode) ;
 }
 
@@ -57,6 +57,20 @@ void Path::remove_file() {
 	int result = remove(this->path.c_str()) ;
 	if (result) throw runtime_error("could not remove the file, " + this->path) ;
 }
+
+void rename(const Path& new_path, bool exists_ok) {
+
+	if (!exists_ok && new_path.exists()) runtime_error("cannot overwrite this path") ;
+
+	if (this->exists())
+ 
+	this->path = new_path.to_string() ;
+	this->abs_path = this->get_absolute_path() ;
+}
+
+void rename(const string& new_path_str, bool exists_ok) { this->rename(Path(new_path_str), exists_ok) ; }
+void rename(const Path& new_path) { this->rename(new_path, false) ; }
+void rename(const string& new_path_str) { this->rename(Path(new_path_str), false) ; }
 
 // dir operations 
 
@@ -125,15 +139,12 @@ bool Path::is_absolute() {
 	return this->path.at(0) == '/' ; 
 }
 
-string Path::get_parent_path() {
+Path Path::get_parent_path() {
 
 	int last_sep = this->path.rfind('/') ;
 
-	if (last_sep == string::npos) {
-		return "." ;
-	} else {
-		return this->path.substr(0, last_sep) ;
-	}
+	if (last_sep == string::npos) { return Path(".") ; } 
+	else { return Path(this->path.substr(0, last_sep)) ; }
 }
 
 Path Path::get_absolute_path() {

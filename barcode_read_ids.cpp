@@ -2,10 +2,12 @@
 
 using namespace std ;
 
-int extract_barcode_read_ids(Task<int, Extract_barcode_read_ids_args> task) {
+string get_bc_key(const string& line) { return line.substr(0, line.find('\t')) ; }
+
+tuple<string, vector<string>> extract_barcode_read_ids(Task<tuple<string, vector<string>>, Extract_barcode_read_ids_args> task) {
 
     // parse arguments
-	string barcode_read_ids_path = task.args.barcode_read_ids_path ;
+	string barcode_read_id_chunks_path = task.args.barcode_read_id_chunks_path ;
 	string fastq_path = task.args.fastq_path ;
 	Sample& sample = * task.args.sample_ptr ; 
 
@@ -14,10 +16,10 @@ int extract_barcode_read_ids(Task<int, Extract_barcode_read_ids_args> task) {
 
 	// log activity
     string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
-	cout << log_header + "reading read-ids and barcodes from " + fastq_path + "\n";
+	cout << log_header + "reading barcode read id lines from " + fastq_path + "\n";
 
     // create the output writer
-    Gzout gzout = Gzout(barcode_read_ids_path) ;
+    GzChunkSortWriter gszout = GzChunkSortWriter(barcode_read_id_chunks_path) ;
 
 	// create the input reader
     Gzin gzin (fastq_path) ;
@@ -48,15 +50,33 @@ int extract_barcode_read_ids(Task<int, Extract_barcode_read_ids_args> task) {
             if (!v_cell_bc.empty()) {
 
                 stringstream ss;
-                ss << v_cell_bc << umi << '\t' << to_string(seq_cnt) << '\t' << read_id ;
+                ss << v_cell_bc << umi ;
 
-                gzout.write_line(ss.str()) ;
+                string key = ss.str() ;
+
+                ss << '\t' << read_id ;
+
+                gszout.write_line(key, ss.str()) ;
             }
         }
     }
 
-	gzout.flush_close() ;
+	gszout.flush_close() ;
     cout << log_header + to_string(seq_cnt) + " sequences read from " + fastq_path + "\n" ;
+
+    return tuple<string, vector<string>> (sample.get_key(), gszout.get_files()) ;
+}
+
+int collect_barcode_read_ids(Task<int, Collect_barcode_read_ids_args> task) {
+
+    // log activity
+    string log_header = task.args.sample_ptr->get_project_name() + " - " + task.args.sample_ptr->get_sample_name() + " : " ;
+    cout << log_header + "collecting sorted barcode read id files into " + task.args.read_ids_path + "\n";
+
+    int lines_written = collect_sorted_chunks(task.args.read_ids_path, task.args.barcode_read_id_chunk_paths, get_bc_key) ;
+
+    // log activity
+    cout << log_header +  to_string(lines_written) + " barcode read id lines written to " + task.args.read_ids_path + "\n";
 
     return 0 ;
 }

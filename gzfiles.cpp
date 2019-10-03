@@ -42,7 +42,11 @@ Gzin::Gzin (const string& file_path) {
 	}
 }
 
-Gzin::~Gzin () { delete this->buffer ; }
+Gzin::~Gzin () { 
+
+	if (!this->finished) gzclose(this->gzfile) ;
+	delete this->buffer ; 
+}
 
 void Gzin::read_to_buffer() {
 

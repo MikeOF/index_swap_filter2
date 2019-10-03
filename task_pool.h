@@ -13,20 +13,22 @@
 #include "whitelist.h"
 #include "workdir.h"
 
+using namespace std ;
+
 template <class R, class A>
 struct Task {
-	std::function<R (Task<R, A>)> func ;
+	function<R (Task<R, A>)> func ;
 	A args; 
 } ;
 
 template <class R, class A>
-std::stack<R> run_tasks(int threads, std::stack<Task<R, A>> task_stack) {
+stack<R> run_tasks(int threads, stack<Task<R, A>> task_stack) {
 
-	std::vector<Task<R, A>> tasks ;
-	std::vector<std::future<R>> children; 
-	std::stack<R> return_stack ;
-	std::chrono::seconds wait_span (1) ;
-	std::chrono::seconds sleep_span (5) ;
+	vector<Task<R, A>> tasks ;
+	vector<future<R>> children; 
+	stack<R> return_stack ;
+	chrono::seconds wait_span (1) ;
+	chrono::seconds sleep_span (1) ;
 
 	// transfer tasks to a vector
 	while(!task_stack.empty()) {
@@ -38,10 +40,10 @@ std::stack<R> run_tasks(int threads, std::stack<Task<R, A>> task_stack) {
 	while (running) {
 
 		// check children
-		std::stack<int> to_remove ;
+		stack<int> to_remove ;
 		for (int i = 0; i < children.size(); i++) {
 
-			if (children[i].wait_for(wait_span) == std::future_status::ready) {
+			if (children[i].wait_for(wait_span) == future_status::ready) {
 
 				to_remove.push(i) ; return_stack.push(children[i].get()) ;
 			} 
@@ -60,14 +62,14 @@ std::stack<R> run_tasks(int threads, std::stack<Task<R, A>> task_stack) {
 		// start tasks
 		for (int i = 0; i < children_to_start; i++) {
 
-			children.emplace_back( std::async (std::launch::async, tasks[task_idx].func, tasks[task_idx] ) ) ;
+			children.emplace_back( async (launch::async, tasks[task_idx].func, tasks[task_idx] ) ) ;
 
 			task_idx++ ;
 		}
 
 		// check to see if we are done, sleep if we aren't
 		if (children.empty() && task_idx == tasks.size()) { running = false ; }
-		else { std::this_thread::sleep_for (sleep_span) ; }
+		else { this_thread::sleep_for (sleep_span) ; }
 	}
 
 	return return_stack ;

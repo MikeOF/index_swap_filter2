@@ -1,80 +1,151 @@
 #include "suspect_barcodes.h"
 
-void write_out_suspect_barcodes(std::vector<std::string> sample_keys, 
-	std::unordered_map<std::string, Sample> samples, Workdir workdir, int threads) {
+int write_out_suspect_barcodes(Task<int, Write_out_suspect_barcodes_args> task) {
 
-	// create the suspect barcodes map
-	std::unordered_map<std::string, std::unordered_set<std::string>> suspect_barcodes_by_sample_key ;
-	for (std::pair<std::string, Sample> element : samples) {
+	// log activity
+	cout << "GLOBAL : writing out suspect read ids\n" ;
 
-		std::string key = element.first;
-		std::unordered_set<std::string> this_set ;
+	// parse args
+	unordered_map<string, string>& suspect_barcodes_path_by_sample_key = task.args.suspect_barcodes_path_by_sample_key ;
+	unordered_map<string, string>& sorted_barcode_read_ids_path_by_sample_key = task.args.sorted_barcode_read_ids_path_by_sample_key ;
+	unordered_map<string, tuple<string, string>>& sample_name_project_name_by_sample_key = task.args.sample_name_project_name_by_sample_key ;
+	function<string (string)> key_getter = task.args.key_getter ;
 
-		suspect_barcodes_by_sample_key.insert({{key, this_set}}) ;
+	// get sample keys
+	vector<string> sample_key_vect ;
+	for (unordered_map<string, string>::iterator it = suspect_barcodes_path_by_sample_key.begin(); 
+		it != suspect_barcodes_path_by_sample_key.end(); ++it) {
+
+		sample_key_vect.push_back(it->first) ;
 	}
 
-	// create tasks to read in barcodes for each sample
-	std::stack<Task<int, Get_all_barcodes_args>> task_stack;
-	for (std::string key : sample_keys) {
+	// get ins, outs, keys, lines, and suspect counters
+	unordered_map<string, Gzout*> gzout_ptr_by_sample_key ;
+	unordered_map<string, Gzin*> gzin_ptr_by_sample_key ;
+	unordered_map<string, string> key_by_sample_key ;
+	unordered_map<string, string> line_by_sample_key ;
+	unordered_map<string, int> line_counter_by_sample_key ;
+	for (string sample_key : sample_key_vect) {
 
-		// create the arguments
-		Get_all_barcodes_args args ;
-		args.suspect_barcodes_ptr = &suspect_barcodes_by_sample_key.at(key) ;
-		args.sample_ptr = &samples.at(key) ; 
-		args.workdir_ptr = &workdir ;
+		// Gzin and Gzout
+		Gzout * gzout_ptr = new Gzout(suspect_barcodes_path_by_sample_key.at(sample_key)) ;
+		Gzin * gzin_ptr = new Gzin(sorted_barcode_read_ids_path_by_sample_key.at(sample_key)) ;
 
-		// create the task
-		Task<int, Get_all_barcodes_args> task ; 
-		task.func = get_all_barcodes ; 
-		task.args = args ;
+		if (!gzin_ptr->has_next_line()) throw runtime_error("passed an empty sorted barcode read ids file") ;
 
-		task_stack.push(task) ;
+		// key and line
+		string line = gzin_ptr->read_line() ;
+		string key = key_getter(line) ;
+
+		// make maps
+		gzout_ptr_by_sample_key.insert(pair<string, Gzout*>(sample_key, gzout_ptr)) ;
+		gzin_ptr_by_sample_key.insert(pair<string, Gzin*>(sample_key, gzin_ptr)) ;
+		key_by_sample_key.insert(pair<string, string>(sample_key, key)) ;
+		line_by_sample_key.insert(pair<string, string>(sample_key, line)) ;
+		line_counter_by_sample_key.insert(pair<string, int>(sample_key, 0)) ;
 	}
 
-	run_tasks(threads, task_stack) ;
+	while (sample_key_vect.size() > 1) {
 
-	for (std::pair<std::string, std::unordered_set<std::string>> element : suspect_barcodes_by_sample_key) {
+		// get low key
+		string low_key = key_by_sample_key.at(sample_key_vect.at(0)) ;
+        for (string sample_key : sample_key_vect) { 
+        	if (key_by_sample_key.at(sample_key) < low_key) { 
+        		low_key = string(key_by_sample_key.at(sample_key)) ;
+        	} 
+        }
 
-		std::string key = element.first;
+        // get samples
+        vector<string> low_key_samples ;
+		for (string sample_key : sample_key_vect) { 
+        	if (key_by_sample_key.at(sample_key) == low_key) low_key_samples.push_back(sample_key) ;
+        }
 
-		std::cout << "sample key: " + key + ", " + std::to_string(element.second.size()) + " barcodes" << std::endl ;
+        // samples to remove from the sample_key_vect
+        stack<string> to_evict ;
+
+        // if there is only one sample get the next key for that sample and continue
+        if (low_key_samples.size() == 1) {
+
+        	string& sample_key = low_key_samples.at(0) ;
+
+        	while (key_by_sample_key.at(sample_key) == low_key) {
+
+        		// check if there are more lines for this sample
+        		if (gzin_ptr_by_sample_key.at(sample_key)->has_next_line()) {
+
+        			// get a new line
+        			line_by_sample_key.at(sample_key) = gzin_ptr_by_sample_key.at(sample_key)->read_line() ;
+					key_by_sample_key.at(sample_key) = key_getter(line_by_sample_key.at(sample_key)) ;
+
+        		} else { 
+
+        			// evict the sample
+        			to_evict.push(sample_key) ;
+        			break ;
+        		}
+        	}
+
+        } else {
+
+	        // print off suspects
+	        for (int i = 0; i < low_key_samples.size(); i++) {
+
+	        	string& sample_key = low_key_samples.at(i) ;
+
+	        	while (key_by_sample_key.at(sample_key) == low_key) {
+
+	        		// write the line
+	        		gzout_ptr_by_sample_key.at(sample_key)->write_line(line_by_sample_key.at(sample_key)) ;
+					line_counter_by_sample_key.at(sample_key)++ ;
+
+	        		if (gzin_ptr_by_sample_key.at(sample_key)->has_next_line()) {
+
+	        			// get a new line
+	        			line_by_sample_key.at(sample_key) = gzin_ptr_by_sample_key.at(sample_key)->read_line() ;
+						key_by_sample_key.at(sample_key) = key_getter(line_by_sample_key.at(sample_key)) ;
+
+	        		} else { 
+
+	        			// evict the sample
+	        			to_evict.push(sample_key) ;
+	        			break ;
+	        		}
+	        	}
+	        }
+        }
+
+        // evict finished samples
+        while (!to_evict.empty()) {
+
+        	for (int i = 0; i < sample_key_vect.size(); i++) {
+
+        		if (sample_key_vect.at(i) == to_evict.top()) {
+
+        			sample_key_vect.erase(sample_key_vect.begin() + i) ;
+        			break ;
+        		}
+        	}
+        	to_evict.pop() ;
+        }
 	}
-}
 
-int get_all_barcodes(Task<int, Get_all_barcodes_args> task) {
+	// close gzouts, delete gzouts and gzins
+	for (auto it = gzout_ptr_by_sample_key.begin(); it != gzout_ptr_by_sample_key.end(); ++it) {
 
-	// parse task
-	std::unordered_set<std::string> * suspect_barcodes_ptr = task.args.suspect_barcodes_ptr ;
-	Sample sample = *task.args.sample_ptr ;
-	Workdir workdir = *task.args.workdir_ptr ;
+		it->second->flush_close() ; delete it->second ;
+	}
+	for (auto it = gzin_ptr_by_sample_key.begin(); it != gzin_ptr_by_sample_key.end(); ++it) {
 
-	// log the activity
-	std::string msg = sample.get_project_name() + " - " + sample.get_sample_name() + " : reading in all barcodes\n" ;
-	std::cout << msg ;
+		delete it->second ;
+	}
 
-	int cnt = 0;
-	for (std::string bc_fq_path : sample.get_barcode_fastq_paths()) {
-
-		std::string rid_barcodes_path = workdir.get_read_id_barcodes_path(sample.get_key(), bc_fq_path) ;
-
-		// create the input reader
-		Gzins gz_input ;
-		gz_input.file_path = rid_barcodes_path ;
-		gz_begin_gzins(&gz_input) ;
-
-		// get all the barcodes from this file
-        while (!gz_input.finished) {
-
-			gz_read_lines(&gz_input) ;
-
-			for (std::string line : gz_input.line_vect) {
-
-				// grab the cell-umi barcode
-        		suspect_barcodes_ptr->insert(line.substr(0, line.find('\t') - 1)) ;
-			}
-
-			if (gz_input.finished) break ;
-		}
+	// log number of suspect read ids found
+	for (auto it = sample_name_project_name_by_sample_key.begin(); it != sample_name_project_name_by_sample_key.end(); ++it) {
+		string log_msg = get<1>(it->second) + " - " + get<0>(it->second) + " : " ;
+		log_msg += to_string(line_counter_by_sample_key.at(it->first)) + " suspect read ids written to " ;
+		log_msg += suspect_barcodes_path_by_sample_key.at(it->first) + "\n" ;
+		cout << log_msg ;
 	}
 
 	return 0 ;
