@@ -2,18 +2,42 @@
 
 using namespace std ;
 
-Path::Path(const string& path_str) {
+Path::Path() { this->abs_path_str = Path(".").abs_path_str ; }
+
+Path::Path(const string& path_str_arg) {
+
+	string path_str = string(path_str_arg) ;
+
+	// ignore paths with .. and . tokens that aren't just "."
+	if (path_str != ".") {
+		string token ;
+		istringstream token_stream ;
+		token_stream = istringstream(path_str) ;
+		while (getline(token_stream, token, '/')) {
+			if (token == "." || token == "..") throw runtime_error("unsupported path string") ;
+		}
+	}
 
 	// make sure the path isn't empty
 	if (path_str.empty()) throw runtime_error("the path string is empty") ;
 
 	// remove trailing slashes 	
-	while (path_str.at(path_str.size() - 1) == '/') { path_str = path_str.substr(0, path_str.size() - 1) ; }
+	while (path_str.size() > 1 && path_str.at(path_str.size() - 1) == '/') { 
+		path_str = path_str.substr(0, path_str.size() - 1) ; 
+	}
 
 	// remove double slashes
 	while (path_str.find("//") != string::npos) { path_str = path_str.replace(path_str.find("//"), 2, "/") ; }
 
-	if (path_str.at(0) == '/') { 
+	if (path_str == ".") {
+
+		this->abs_path_str = get_absolute_path_str("") ;
+
+	} else if (path_str == "/") {
+
+		this->abs_path_str = path_str ;
+
+	} else if (path_str.at(0) == '/') { 
 
 		this->abs_path_str = path_str ; 
 
@@ -29,19 +53,22 @@ string Path::get_absolute_path_str(const string& path_str) {
 
 	getcwd(buf, PATH_MAX) ;
 
-	string abs_path_str = string(buf) + "/" + path_str ;
+	string abs_path_str = string(buf) ;
+
+	if (!path_str.empty()) abs_path_str += "/" + path_str ;
 
 	return abs_path_str ;
 }
 
 // existence and type
 
-bool Path::exists() { 
+bool Path::exists() const { 
 
+	struct stat pstat ;
 	return stat(this->abs_path_str.c_str(), &pstat) == 0 ; 
 }
 
-bool Path::is_file() {
+bool Path::is_file() const {
 
 	struct stat pstat ;
 	int result = stat(this->abs_path_str.c_str(), &pstat) ;
@@ -49,7 +76,7 @@ bool Path::is_file() {
 	return result == 0 && S_IFREG & pstat.st_mode ;
 }
 
-bool Path::is_dir() {
+bool Path::is_dir() const {
 
 	struct stat pstat ;
 	int result = stat(this->abs_path_str.c_str(), &pstat) ;
@@ -59,7 +86,7 @@ bool Path::is_dir() {
 
 // file operations
 
-void Path::remove_file() {
+void Path::remove_file() const {
 
 	if (!this->is_file()) throw runtime_error("attempt to file-remove a non-file path, " + this->abs_path_str) ;
 
@@ -67,13 +94,13 @@ void Path::remove_file() {
 	if (result) throw runtime_error("could not remove the file, " + this->abs_path_str) ;
 }
 
-void Path::rename(const Path& new_path, bool exists_ok) {
+void Path::rename(const Path new_path, bool exists_ok) {
 
 	bool new_path_exists = new_path.exists() ;
 
 	if (new_path_exists) {
 		
-		if (!exists_ok) runtime_error("cannot overwrite this path") ;
+		if (!exists_ok) runtime_error("attempt to overwrite path with specifying exists_ok = true") ;
 		if (new_path.is_dir()) throw runtime_error("cannot rename to an existant directory") ;
 	}
 
@@ -81,7 +108,7 @@ void Path::rename(const Path& new_path, bool exists_ok) {
 
 	if (this_exists) { 
 
-		rename(this->abs_path_str.c_str(), new_path.abs_path_str.c_str()) ;
+		std::rename(this->abs_path_str.c_str(), new_path.abs_path_str.c_str()) ;
 
 	} else if (new_path_exists) {
 
@@ -92,7 +119,7 @@ void Path::rename(const Path& new_path, bool exists_ok) {
 }
 
 void Path::rename(const string& new_path_str, bool exists_ok) { this->rename(Path(new_path_str), exists_ok) ; }
-void Path::rename(const Path& new_path) { this->rename(new_path, false) ; }
+void Path::rename(const Path new_path) { this->rename(new_path, false) ; }
 void Path::rename(const string& new_path_str) { this->rename(Path(new_path_str), false) ; }
 
 // dir operations 
@@ -138,11 +165,12 @@ void Path::make_dir() {
 	if (this->exists()) throw runtime_error("attempt to make a dir at an existant path") ; 
 
 	int rval = mkdir(this->abs_path_str.c_str(),  0777) ;
-	if (rval) throw runtime_error("Could not make directory: " + path) ;
+	if (rval) throw runtime_error("Could not make directory: " + this->abs_path_str) ;
 }
 
 void Path::remove_dir_recursively() {
 
+	if (this->abs_path_str == "/") throw runtime_error("why whould you do this? rm /??") ;
 	if (!this->is_dir()) throw runtime_error("attempt to recursively remove a non-directory path, " + this->abs_path_str) ;
 
 	for (string sub_path_str : this->get_dir_list()) {
@@ -157,7 +185,7 @@ void Path::remove_dir_recursively() {
 
 // path operations
 
-string Path::get_relative_path_str() { 
+string Path::to_relative_path_string() { 
 
 	// tvars
 	string token ;
@@ -178,7 +206,7 @@ string Path::get_relative_path_str() {
 	while (getline(token_stream, token, '/')) this_tokens.push_back(token) ;
 
 	// create a relative path of tokens
-	<string> relative_path_tokens;
+	vector<string> relative_path_tokens ;
 
 	// get the number of shared tokens ?
 	int shared_tokens = 0 ;
@@ -194,7 +222,7 @@ string Path::get_relative_path_str() {
 
 	// add this tokens
 	for (int i = shared_tokens; i < this_tokens.size(); i++) {
-		relative_path_tokens.push_back(this_tokens.at(i + shared_tokens)) ;
+		relative_path_tokens.push_back(this_tokens.at(i)) ;
 	}
 
 	if (relative_path_tokens.size() == 0) return "." ;
@@ -213,15 +241,18 @@ Path Path::get_parent_path() {
 
 	int last_sep = this->abs_path_str.rfind('/') ;
 
-	if (last_sep == string::npos) { return Path(".") ; } 
-	else { return Path(this->abs_path_str.substr(0, last_sep)) ; }
+	if (last_sep == string::npos) throw runtime_error("an absolute path should have a /") ;
+	if (last_sep == 0) throw runtime_error("there is no parent for the root directory") ;
+
+	return Path(this->abs_path_str.substr(0, last_sep)) ; 
 }
 
 string Path::get_filename() {
 
-	int last_sep = path.rfind('/') ;
+	int last_sep = this->abs_path_str.rfind('/') ;
 
-	if (last_sep == string::npos) { return string(this->abs_path_str) ; }
+	if (last_sep == string::npos) throw runtime_error("an absolute path should have a /") ;
+	if (last_sep == 0) throw runtime_error("there is no filename for the root directory") ;
 
 	return this->abs_path_str.substr(last_sep + 1) ;
 }
@@ -237,14 +268,8 @@ string Path::get_filename_stem() {
 	return filename.substr(0, first_dot) ;
 }
 
-Path Path::join(Path& p) { 
-
-	if (p.is_absolute()) throw runtime_error("cannot append an absolute path") ;
-	return Path(this->abs_path_str + "/" + p.to_string()) ; 
-}
-
 Path Path::join(const string& s) { 
 
-	Path p = Path(s) ;
-	return this->join(p) ;
+	if (s.at(0) == '/') throw runtime_error("cannot append an absolute path") ;
+	return Path(this->abs_path_str + "/" + s) ;
 }
