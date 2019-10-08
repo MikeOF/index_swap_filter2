@@ -4,14 +4,14 @@ using namespace std ;
 
 string get_barcode_from_bcsnrid_line(const string& line) { return line.substr(0, line.find('\t')) ; }
 
-int get_seqnum_from_bcsnrid_line(const string&) { 
+int get_seqnum_from_bcsnrid_line(const string& line) { 
 
     int start_pos = line.find('\t')+1 ;
     int length = line.find('\t', start_pos) - start_pos ;
     return stoi(line.substr(start_pos, length)) ;
 }
 
-void read_in_bcsnrid_lines(unordered_map<string, Sample>& samples, Workdir& workdir) {
+void read_in_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 
     // write out barcode seq-num read id chunks for each sample
     stack<Task<tuple<string, vector<string>>, Extract_bcsnrid_lines_args>> extract_task_stack ;

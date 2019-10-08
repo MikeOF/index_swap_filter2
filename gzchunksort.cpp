@@ -3,7 +3,7 @@
 using namespace std ;
 
 template <class K>
-GzChunkSortWriter::GzChunkSortWriter(const string& out_dir_path_str) {
+GzChunkSortWriter<K>::GzChunkSortWriter(const string& out_dir_path_str) {
 
 	// initialize the output dir
 	this->out_dir_path = Path(out_dir_path_str) ;
@@ -13,7 +13,8 @@ GzChunkSortWriter::GzChunkSortWriter(const string& out_dir_path_str) {
 	this->out_dir_path.make_dir() ;
 }
 
-void GzChunkSortWriter::write_lines() {
+template <class K>
+void GzChunkSortWriter<K>::write_lines() {
 
 	// count this line
 	this->out_file_count++ ;
@@ -47,7 +48,7 @@ void GzChunkSortWriter::write_lines() {
 }
 
 template <class K>
-void GzChunkSortWriter::write_line(K key, string line) {
+void GzChunkSortWriter<K>::write_line(K key, string line) {
 
 	if (this->closed) throw runtime_error("attempted to write to a closed GzChunkSortWriter") ;
 
@@ -65,13 +66,15 @@ void GzChunkSortWriter::write_line(K key, string line) {
 	if (this->line_count >= this->chunk_size) this->write_lines() ;
 }
 
-void GzChunkSortWriter::flush_close() {
+template <class K>
+void GzChunkSortWriter<K>::flush_close() {
 
 	if (this->sorted_lines.size() > 0) this->write_lines() ; 
 	this->closed = true ;
 }
 
-vector<string> GzChunkSortWriter::get_files() {
+template <class K>
+vector<string> GzChunkSortWriter<K>::get_files () {
 
 	if(!this->closed) throw runtime_error("attempted to get files before GzChunkSortWriter is closed") ;
 	return this->file_vect ;
@@ -89,7 +92,7 @@ int collect_sorted_chunks(const string& out_file_path_str, const vector<string> 
 
 	// handle the case of one chunk
 	if (file_vect.size() == 1) {
-		file_vect.at(0).rename(out_file_path_str) ;
+		Path(file_vect.at(0)).rename(out_file_path_str) ;
 		return -1 ;
 	}
 

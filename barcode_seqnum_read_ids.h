@@ -22,7 +22,7 @@ using namespace std ;
 string get_barcode_from_bcsnrid_line(const string&) ;
 int get_seqnum_from_bcsnrid_line(const string&) ;
 
-void read_in_bcsnrid_lines(unordered_map<string, Sample>&, Workdir&) ;
+void read_in_bcsnrid_lines(int threads, unordered_map<string, Sample>&, Workdir&) ;
 
 struct Extract_bcsnrid_lines_args {
 	string bcsnrid_chunks_path ;
@@ -30,7 +30,7 @@ struct Extract_bcsnrid_lines_args {
 	Sample * sample_ptr ;
 };
 
-tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string, vector<string>>, Extract_barcode_read_ids_args>) ;
+tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string, vector<string>>, Extract_bcsnrid_lines_args>) ;
 
 struct Collect_bcsnrid_lines_args {
 	vector<string> bcsnrid_chunk_paths ;
@@ -38,6 +38,6 @@ struct Collect_bcsnrid_lines_args {
 	Sample * sample_ptr ;
 };
 
-int collect_bcsnrid_lines_task_func(Task<int, Collect_barcode_read_ids_args>) ;
+int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args>) ;
 
 #endif

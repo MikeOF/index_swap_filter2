@@ -115,7 +115,7 @@ int main(int argc, char ** argv) {
 	// --------------------------
 
 	// read in barcode seq-num read ids into the workdir
-	read_in_bcsnrid_lines(samples, workdir) ;
+	read_in_bcsnrid_lines(threads, samples, workdir) ;
 
 	// write out the suspect read ids
 	write_out_suspect_bcsnrid_lines(samples, workdir) ;
