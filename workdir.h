@@ -15,11 +15,15 @@ class Workdir {
 
 	Path base_dir_path ;
 	unordered_map<string, Path> sample_dir_by_sample_key ;
-	unordered_map<string, string> barcode_read_ids_path_by_sample_key ;
-	unordered_map<string, unordered_map<string, string>> barcode_read_id_chunks_path_by_fastq_path_by_sample_key ;
-	unordered_map<string, string> suspect_read_ids_path_by_sample_key ;
-	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
 	vector<string> sample_keys ;
+
+	unordered_map<string, string> bcsnrid_path_by_sample_key ;
+	unordered_map<string, unordered_map<string, string>> bcsnrid_chunks_path_by_bc_fastq_path_by_sample_key ;
+
+	unordered_map<string, string> suspect_bcsnrid_path_by_sample_key ;
+	unordered_map<string, string> suspect_bcsnrid_chunks_path_by_sample_key ;
+
+	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
 
 	public:
 
@@ -27,9 +31,10 @@ class Workdir {
 
 		vector<string> get_sample_keys() { return sample_keys ; }
 
-		string get_barcode_read_ids_path(string) ;
-		string get_barcode_read_id_chunks_path(string, string) ;
-		string get_suspect_read_ids_path(string) ;
+		string get_bcsnrid_path(string) ;
+		string get_bcsnrid_chunks_path(string, string) ;
+		string get_suspect_bcsnrid_path(string) ;
+		string get_suspect_bcsnrid_chunks_path(string) ;
 		string get_swapped_in_read_ids_path(string) ;
 } ;
 

@@ -2,6 +2,7 @@
 
 using namespace std ;
 
+template <class K>
 GzChunkSortWriter::GzChunkSortWriter(const string& out_dir_path_str) {
 
 	// initialize the output dir
@@ -45,7 +46,8 @@ void GzChunkSortWriter::write_lines() {
     this->line_count = 0 ;
 }
 
-void GzChunkSortWriter::write_line(string key, string line) {
+template <class K>
+void GzChunkSortWriter::write_line(K key, string line) {
 
 	if (this->closed) throw runtime_error("attempted to write to a closed GzChunkSortWriter") ;
 
@@ -75,7 +77,8 @@ vector<string> GzChunkSortWriter::get_files() {
 	return this->file_vect ;
 }
 
-int collect_sorted_chunks(const string& out_file_path_str, const vector<string> file_vect, const function<string (string)> key_getter) {
+template <class K>
+int collect_sorted_chunks(const string& out_file_path_str, const vector<string> file_vect, const function<K (string)> key_getter) {
 
 	// check args
 	Path out_file_path = Path(out_file_path_str) ;
@@ -84,12 +87,18 @@ int collect_sorted_chunks(const string& out_file_path_str, const vector<string> 
 
 	if (file_vect.empty()) throw runtime_error("passed an empty file vector") ;
 
+	// handle the case of one chunk
+	if (file_vect.size() == 1) {
+		file_vect.at(0).rename(out_file_path_str) ;
+		return -1 ;
+	}
+
 	// initialize file streams
 	Gzout gzout = Gzout(out_file_path.to_string()) ;
 
 	vector<Gzin *> gzin_vect ;
     vector<string> lines ;
-    vector<string> keys ;
+    vector<K> keys ;
 	for (string file : file_vect) { 
 
 		gzin_vect.push_back(new Gzin(file)) ; 

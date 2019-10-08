@@ -13,13 +13,23 @@
 
 using namespace std ;
 
-struct Write_out_suspect_barcodes_args {
-	unordered_map<string, string> suspect_barcodes_path_by_sample_key ;
-	unordered_map<string, string> sorted_barcode_read_ids_path_by_sample_key ;
-	unordered_map<string, tuple<string, string>> sample_name_project_name_by_sample_key ;
-	function<string (string)> key_getter ;
+void write_out_suspect_bcsnrid_lines(unordered_map<string, Sample>&, Workdir&) ;
+
+struct Write_out_suspect_bcsnrid_lines_args {
+	unordered_map<string, string> suspect_bcsnrid_chunks_path_by_sample_key ;
+	unordered_map<string, string> bcsnrid_path_by_sample_key ;
+	unordered_map<string, Sample*> sample_ptr_by_sample_key ;
 } ;
 
-int write_out_suspect_barcodes(Task<int, Write_out_suspect_barcodes_args>) ;
+unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
+	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args>) ;
+
+struct Collect_suspect_bcsnrid_lines_args {
+	vector<string> suspect_bcsnrid_chunk_paths ;
+	string suspect_bcsnrid_path ;
+	Sample* sample_ptr ;
+} ;
+
+int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_lines_args>) ;
 
 #endif
