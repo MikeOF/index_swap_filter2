@@ -45,7 +45,7 @@ Gzin::Gzin (const string& file_path) {
 Gzin::~Gzin () { 
 
 	if (!this->finished) gzclose(this->gzfile) ;
-	delete this->buffer ; 
+	delete[] this->buffer ; 
 }
 
 void Gzin::read_to_buffer() {
@@ -202,3 +202,41 @@ void Gzout::flush_close() {
 	// mark the gzouts finished
 	this->finished = true ;
 }
+
+void combine_gz_files(string& out_path, vector<string>& gz_file_vect) {
+
+	// open the output gz file
+	gzFile out_gzfile = gzopen(out_path.c_str(), "w") ;
+	if (out_gzfile == NULL) throw runtime_error("could not open gzipped file, " + out_path) ;
+
+	// set the output's internal buffer
+	bool check = gzbuffer(out_gzfile, COMBINE_INTERNAL_BUFFER_BYTES) ;
+	if (check) throw runtime_error("could not set internal gzFile buffer, " + out_path) ;
+
+	char * char_buffer = new char[COMBINE_CHAR_BUFFER_BYTES] ;
+
+	// write each gz file to the output file
+	for (string in_path : gz_file_vect) {
+
+		// open the input file
+		gzFile in_gzfile  = gzopen(in_path.c_str(), "r") ;
+		if (in_gzfile == NULL) {
+			throw runtime_error("could not open gzipped file, " + in_path) ;
+		}
+
+		// set the input's internal gz buffer
+		check = gzbuffer(in_gzfile, COMBINE_INTERNAL_BUFFER_BYTES) ;
+		if (check) throw runtime_error("could not set the internal gzFile buffer, " + in_path) ;
+
+		// write the input to the output
+		while(!gzeof(in_gzfile)) {
+			int bytes_read = gzread(in_gzfile, char_buffer, COMBINE_CHAR_BUFFER_BYTES) ;
+			gzwrite(out_gzfile, char_buffer, bytes_read) ;
+		}
+		gzclose(in_gzfile) ;
+	}
+
+	// finally close out
+	gzclose(out_gzfile) ;
+	delete[] char_buffer ;
+} 

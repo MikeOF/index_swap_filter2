@@ -14,6 +14,9 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 		throw runtime_error("Workdir path: " + this->base_dir_path.to_string() + ", is not empty") ;
 	}
 
+	// global paths
+	this->suspect_read_fastq_path = this->base_dir_path.join("global_suspect_read.fastq.gz").to_string() ;
+
 	for (auto it = samples.begin(); it != samples.end(); ++it) {
 
 		// parse sample iterator
@@ -55,6 +58,10 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 		Path suspect_bcsnrid_chunks_path = sample_dir_path.join(sample.get_sample_name() + "_suspect_bcsnrid_chunks") ;
 		this->suspect_bcsnrid_chunks_path_by_sample_key.insert(make_pair(sample_key, suspect_bcsnrid_chunks_path.to_string())) ;
 
+		// path for suspect read fastqs
+		Path suspect_read_fastq_path = sample_dir_path.join(sample.get_sample_name() + "_suspect_read.fastq.gz") ;
+		this->suspect_read_fastq_path_by_sample_key.insert(make_pair(sample_key, suspect_read_fastq_path.to_string())) ;
+
 		// path for swaps		
 		Path swapped_in_read_ids_path = sample_dir_path.join(sample.get_sample_name() + "_INDEX_SWAP_CONTAMINANT_READ_IDS.txt.gz") ;
 		this->swapped_in_read_ids_path_by_sample_key.insert(make_pair(sample_key, swapped_in_read_ids_path.to_string())) ;
@@ -75,6 +82,9 @@ string Workdir::get_suspect_bcsnrid_path(string sample_key) {
 
 string Workdir::get_suspect_bcsnrid_chunks_path(string sample_key) {
 	return this->suspect_bcsnrid_chunks_path_by_sample_key.at(sample_key) ;
+}
+string Workdir::get_suspect_read_fastq_path(string sample_key) {
+	return this->suspect_read_fastq_path_by_sample_key.at(sample_key) ;
 }
 
 string Workdir::get_swapped_in_read_ids_path(string sample_key) {

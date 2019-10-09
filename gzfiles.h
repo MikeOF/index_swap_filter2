@@ -6,6 +6,7 @@
 #include <vector>
 #include <dirent.h>
 #include <cstring>
+#include <unordered_set>
 
 #include "path.h"
 
@@ -62,5 +63,9 @@ class Gzout {
 		void write_line(const string&) ;
 		void flush_close() ;
 };
+
+const int COMBINE_INTERNAL_BUFFER_BYTES = 512000 ;
+const int COMBINE_CHAR_BUFFER_BYTES = 256000 ;
+void combine_gz_files(string&, vector<string>&) ;
 
 #endif

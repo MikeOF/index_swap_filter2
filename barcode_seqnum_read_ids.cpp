@@ -11,9 +11,14 @@ int get_seqnum_from_bcsnrid_line(const string& line) {
     return stoi(line.substr(start_pos, length)) ;
 }
 
+string get_read_id_from_bcsnrid_line(const string& line) {
+    
+    return line.substr(line.find('\t', line.find('\t') + 1) + 1) ;
+}
+
 void read_in_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 
-    // write out barcode seq-num read id chunks for each sample
+    // write out barcode seqnum read id chunks for each sample
     stack<Task<tuple<string, vector<string>>, Extract_bcsnrid_lines_args>> extract_task_stack ;
 
     // for each sample
@@ -86,7 +91,10 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 
 	// log activity
     string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
-	cout << log_header + "reading barcode read id lines from " + bc_fastq_path + "\n" ;
+    string bc_fastq_relative_path_string = Path(bc_fastq_path).to_relative_path_string() ;
+	string msg = log_header + "reading barcode seqnum read id lines from " ;
+    msg += bc_fastq_relative_path_string + "\n" ;
+    cout << msg ;
 
     // create the output writer
     GzChunkSortWriter<string> gz_csw_out (bcsnrid_chunks_path) ;
@@ -132,7 +140,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
     }
 
 	gz_csw_out.flush_close() ;
-    cout << log_header + to_string(seq_cnt) + " sequences read from " + bc_fastq_path + "\n" ;
+    cout << log_header + to_string(seq_cnt) + " barcode seqnum read id lines read from " + bc_fastq_relative_path_string + "\n" ;
 
     return tuple<string, vector<string>> (sample.get_key(), gz_csw_out.get_files()) ;
 }
@@ -141,17 +149,18 @@ int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) 
 
     // log activity
     string log_header = task.args.sample_ptr->get_project_name() + " - " + task.args.sample_ptr->get_sample_name() + " : " ;
-    cout << log_header + "collecting sorted barcode read id files into " + task.args.bcsnrid_path + "\n";
+    cout << log_header + "collecting sorted barcode seqnum read id lines\n";
 
     int lines_written = collect_sorted_chunks<string>(task.args.bcsnrid_path, 
         task.args.bcsnrid_chunk_paths, get_barcode_from_bcsnrid_line) ;
 
     // log activity
+    string bcsnrid_relative_path_string = Path(task.args.bcsnrid_path).to_relative_path_string() ;
     if (lines_written >= 0) {
 
-        cout << log_header +  to_string(lines_written) + " barcode seqnum read id lines written to " + task.args.bcsnrid_path + "\n";
+        cout << log_header +  to_string(lines_written) + " barcode seqnum read id lines written to " + bcsnrid_relative_path_string + "\n";
     } else {
-        cout << log_header + "barcode seqnum read id lines copied to " + task.args.bcsnrid_path + "\n";
+        cout << log_header + "barcode seqnum read id lines copied to " + bcsnrid_relative_path_string + "\n";
     }
 
     return 0 ;

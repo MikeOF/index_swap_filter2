@@ -1,12 +1,7 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <future>
-#include <chrono>
 #include <vector>
 #include <unordered_map>
-#include <exception>
 
 #include "path.h"
 #include "sample.h"
@@ -15,6 +10,7 @@
 #include "task_pool.h"
 #include "barcode_seqnum_read_ids.h"
 #include "suspect_barcodes.h"
+#include "suspect_read_fastqs.h"
 
 using namespace std ;
 
@@ -43,13 +39,13 @@ int main(int argc, char ** argv) {
 		threads = stoi(argv[1]) ; 
 
 	} catch (const char* msg) { 
-		cerr << "could not parse threads argument to and int, " << argv[1] << endl ;
+		cerr << "could not parse threads argument to an int, " << argv[1] << endl ;
 		show_usage(argv[0]) ; 
 		exit(1) ; 
 	}
 
 	if (threads < 1 || threads > 20) {
-		cerr << "threads argument must be between 1 and 20 inclusive" << endl ;
+		cerr << "threads argument must be between 0 and 21" << endl ;
 		show_usage(argv[0]) ;
 		exit(1) ;
 	}
@@ -95,12 +91,14 @@ int main(int argc, char ** argv) {
 
 	// work dir path
 	Path work_dir_path = Path(argv[2]) ;
+
 	if (work_dir_path.exists()) {
 		cerr << "work dir path, " << work_dir_path.to_string() 
 		<< ", already exists, will not overwrite" << endl ;
 		show_usage(argv[0]) ; exit(1) ; 
 	}
-	if (!work_dir_path.is_dir()) {
+
+	if (!work_dir_path.get_parent_path().is_dir()) {
 		cerr << "work dir path, " << work_dir_path.to_string() 
 		<< ", does not have a directory for a parent" << endl ;
 		show_usage(argv[0]) ; exit(1) ; 
@@ -119,6 +117,9 @@ int main(int argc, char ** argv) {
 
 	// write out the suspect read ids
 	write_out_suspect_bcsnrid_lines(threads, samples, workdir) ;
+
+	// write out suspect read fastqs
+	write_suspect_read_fastqs(threads, samples, workdir) ;
 
 	return 0;
 }

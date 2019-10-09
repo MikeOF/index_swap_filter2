@@ -21,6 +21,7 @@ using namespace std ;
 
 string get_barcode_from_bcsnrid_line(const string&) ;
 int get_seqnum_from_bcsnrid_line(const string&) ;
+string get_read_id_from_bcsnrid_line(const string&) ;
 
 void read_in_bcsnrid_lines(int threads, unordered_map<string, Sample>&, Workdir&) ;
 

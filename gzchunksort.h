@@ -15,8 +15,8 @@ using namespace std ;
 template <typename K>
 class GzChunkSortWriter {
 
-	const int chunk_size = 2000000 ;
-	const int dir_limit = 3 ;
+	const int chunk_size = 25000000 ;
+	const int dir_limit = 100 ;
 
 	Path out_dir_path ;
 	map<K, vector<string>> sorted_lines ;
@@ -114,6 +114,8 @@ vector<string> GzChunkSortWriter<K>::get_files () {
 	if(!this->closed) throw runtime_error("attempted to get files before GzChunkSortWriter is closed") ;
 	return this->file_vect ;
 }
+
+const int COLLECT_SORTED_CHUNKS_FILE_LIMIT = 30 ;
 
 template <typename K>
 int collect_sorted_chunks(const string& out_file_path_str, 

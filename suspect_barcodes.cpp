@@ -47,7 +47,7 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> task) {
 
 	// log activity
-	cout << "GLOBAL : writing out suspect barcode seq-num read ids\n" ;
+	cout << "GLOBAL : writing out suspect barcode seqnum read id lines\n" ;
 
 	// get argument references
 	unordered_map<string, string>& suspect_bcsnrid_chunks_path_by_sample_key = task.args.suspect_bcsnrid_chunks_path_by_sample_key ;
@@ -180,8 +180,9 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 	unordered_map<string,vector<string>> supect_chunk_paths_by_sample_key ;
 	for (auto it = gzcsout_ptr_by_sample_key.begin(); it != gzcsout_ptr_by_sample_key.end(); ++it) {
 
+		it->second->flush_close() ;
 		supect_chunk_paths_by_sample_key.insert(make_pair(it->first, it->second->get_files())) ;
-		it->second->flush_close() ; delete it->second ;
+		delete it->second ;
 	}
 	for (auto it = gzin_ptr_by_sample_key.begin(); it != gzin_ptr_by_sample_key.end(); ++it) {
 
@@ -191,7 +192,7 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 	// log number of suspect read ids found
 	for (auto it = sample_ptr_by_sample_key.begin(); it != sample_ptr_by_sample_key.end(); ++it) {
 		string msg = it->second->get_project_name() + " - " + it->second->get_sample_name() + " : " ;
-		msg += to_string(line_counter_by_sample_key.at(it->first)) + " suspect barcode seq-num read ids written \n" ;
+		msg += to_string(line_counter_by_sample_key.at(it->first)) + " suspect barcode seqnum read id lines written \n" ;
 		cout << msg ;
 	}
 
@@ -207,7 +208,7 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 
 	// log activity
 	string log_header = sample_ptr->get_project_name() + " - " + sample_ptr->get_sample_name() + " : " ;
-	cout << log_header + "collecting suspect barcode seq-num read ids\n" ;
+	cout << log_header + "collecting suspect barcode seqnum read id lines\n" ;
 
 	int lines_written = collect_sorted_chunks<int>(suspect_bcsnrid_path, suspect_bcsnrid_chunk_paths, get_seqnum_from_bcsnrid_line) ;
 
@@ -215,12 +216,12 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 	string msg = log_header ;
 	if (lines_written < 0) {
 
-		msg += "suspect barcode seq-num read ids copied to" ;
+		msg += "suspect barcode seqnum read id lines copied to " ;
 		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
 	} else {
 
 		msg += to_string(lines_written) ;
-		msg += " suspect barcode seq-num read ids written to" ;
+		msg += " suspect barcode seqnum read id lines written to " ;
 		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
 	}	
 	cout << msg ;
