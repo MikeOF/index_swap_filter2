@@ -10,10 +10,12 @@
 
 #include "gzfiles.h"
 #include "task_pool.h"
+#include "gzchunksort.h"
+#include "barcode_seqnum_read_ids.h"
 
 using namespace std ;
 
-void write_out_suspect_bcsnrid_lines(unordered_map<string, Sample>&, Workdir&) ;
+void write_out_suspect_bcsnrid_lines(int, unordered_map<string, Sample>&, Workdir&) ;
 
 struct Write_out_suspect_bcsnrid_lines_args {
 	unordered_map<string, string> suspect_bcsnrid_chunks_path_by_sample_key ;

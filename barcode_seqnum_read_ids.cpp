@@ -53,7 +53,7 @@ void read_in_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, 
 
         } else {
             chunk_files_by_sample_key.at(sample_key).insert(
-                file_vect.end(), chunk_files.begin(), chunk_files.end()) ;
+                chunk_files_by_sample_key.at(sample_key).end(), chunk_files.begin(), chunk_files.end()) ;
         }
     }
 
@@ -132,7 +132,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
     }
 
 	gz_csw_out.flush_close() ;
-    cout << log_header + to_string(seq_cnt) + " sequences read from " + fastq_path + "\n" ;
+    cout << log_header + to_string(seq_cnt) + " sequences read from " + bc_fastq_path + "\n" ;
 
     return tuple<string, vector<string>> (sample.get_key(), gz_csw_out.get_files()) ;
 }
@@ -141,7 +141,7 @@ int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) 
 
     // log activity
     string log_header = task.args.sample_ptr->get_project_name() + " - " + task.args.sample_ptr->get_sample_name() + " : " ;
-    cout << log_header + "collecting sorted barcode read id files into " + task.args.read_ids_path + "\n";
+    cout << log_header + "collecting sorted barcode read id files into " + task.args.bcsnrid_path + "\n";
 
     int lines_written = collect_sorted_chunks<string>(task.args.bcsnrid_path, 
         task.args.bcsnrid_chunk_paths, get_barcode_from_bcsnrid_line) ;
@@ -149,9 +149,9 @@ int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) 
     // log activity
     if (lines_written >= 0) {
 
-        cout << log_header +  to_string(lines_written) + " barcode seqnum read id lines written to " + task.args.read_ids_path + "\n";
+        cout << log_header +  to_string(lines_written) + " barcode seqnum read id lines written to " + task.args.bcsnrid_path + "\n";
     } else {
-        cout << log_header + "barcode seqnum read id lines copied to " + task.args.read_ids_path + "\n";
+        cout << log_header + "barcode seqnum read id lines copied to " + task.args.bcsnrid_path + "\n";
     }
 
     return 0 ;

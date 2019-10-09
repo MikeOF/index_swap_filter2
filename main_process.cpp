@@ -118,7 +118,7 @@ int main(int argc, char ** argv) {
 	read_in_bcsnrid_lines(threads, samples, workdir) ;
 
 	// write out the suspect read ids
-	write_out_suspect_bcsnrid_lines(samples, workdir) ;
+	write_out_suspect_bcsnrid_lines(threads, samples, workdir) ;
 
 	return 0;
 }

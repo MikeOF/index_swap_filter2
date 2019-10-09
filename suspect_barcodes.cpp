@@ -1,6 +1,6 @@
 #include "suspect_barcodes.h"
 
-void write_out_suspect_barcodes(unordered_map<string, Sample>& samples, Workdir& workdir) {
+void write_out_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 
 	// create suspect task
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> write_out_suspect_bcsnrid_lines_task ;
@@ -37,8 +37,10 @@ void write_out_suspect_barcodes(unordered_map<string, Sample>& samples, Workdir&
 		task.args.suspect_bcsnrid_chunk_paths = it->second ;
 		task.args.suspect_bcsnrid_path = workdir.get_suspect_bcsnrid_path(it->first);
 		task.args.sample_ptr = &(samples.at(it->first));
+
+		collection_task_stack.push(task) ;
 	}
-	run_tasks(1, collection_task_stack) ;
+	run_tasks(threads, collection_task_stack) ;
 }
 
 unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
@@ -204,7 +206,7 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 	Sample* sample_ptr = task.args.sample_ptr ;
 
 	// log activity
-	string log_header = sample->get_project_name() + " - " + sample->get_sample_name() + " : " ;
+	string log_header = sample_ptr->get_project_name() + " - " + sample_ptr->get_sample_name() + " : " ;
 	cout << log_header + "collecting suspect barcode seq-num read ids\n" ;
 
 	int lines_written = collect_sorted_chunks<int>(suspect_bcsnrid_path, suspect_bcsnrid_chunk_paths, get_seqnum_from_bcsnrid_line) ;
@@ -213,12 +215,12 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 	string msg = log_header ;
 	if (lines_written < 0) {
 
-		msg += "suspect barcode seq-num read ids copied to" 
+		msg += "suspect barcode seq-num read ids copied to" ;
 		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
 	} else {
 
-		msg += to_string(lines_written) 
-		msg += " suspect barcode seq-num read ids written to" 
+		msg += to_string(lines_written) ;
+		msg += " suspect barcode seq-num read ids written to" ;
 		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
 	}	
 	cout << msg ;

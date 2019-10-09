@@ -61,6 +61,10 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 	}
 }
 
+string Workdir::get_bcsnrid_path(string sample_key) {
+	return this->bcsnrid_path_by_sample_key.at(sample_key) ;
+}
+
 string Workdir::get_bcsnrid_chunks_path(string sample_key, string barcode_fastq_key) {
 	return this->bcsnrid_chunks_path_by_bc_fastq_path_by_sample_key.at(sample_key).at(barcode_fastq_key) ;
 }
