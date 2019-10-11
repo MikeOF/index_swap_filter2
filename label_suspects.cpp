@@ -86,7 +86,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
 	return sam_path.to_string() ;
 }
 
-string get_cug_key(string& line) {
+string get_cug_key(string line) {
 	int first_tab_pos = line.find('\t') ;
 	int second_tab_pos = line.find('\t', first_tab_pos + 1) ;
 	stringstream ss ;
@@ -153,22 +153,22 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 			// get read id
 			int read_id_stop = line.find(SUSPECT_FASTQ_READ_ID_DELIM) ;
-			string& read_id = line.substr(0, read_id_stop) ;
+			string read_id = line.substr(0, read_id_stop) ;
 
 			// get sample key
 			int sample_key_start = read_id_stop + 1 ;
 			int sample_key_stop = line.find(SUSPECT_FASTQ_READ_ID_DELIM, sample_key_start) ;
-			string& sample_key = line.substr(sample_key, sample_key_stop - sample_key_start) ;
+			string sample_key = line.substr(sample_key_start, sample_key_stop - sample_key_start) ;
 
 			// get barcode
 			int barcode_start = sample_key_stop + 1 ;
 			int barcode_stop = line.find('\t', barcode_start) ;
-			string& barcode = line.substr(barcode_start, barcode_stop - barcode_start) ;
+			string barcode = line.substr(barcode_start, barcode_stop - barcode_start) ;
 
 			// get transcript id & gene id
-			int transcript_id_start = line('\t', barcode_stop + 1) + 1 ;
-			int transcript_id_stop = line('\t', transcript_id_start) ;
-			string& transcript_id = line.substr(transcript_id_start, transcript_id_stop - transcript_id_stop) ;
+			int transcript_id_start = line.find('\t', barcode_stop + 1) + 1 ;
+			int transcript_id_stop = line.find('\t', transcript_id_start) ;
+			string transcript_id = line.substr(transcript_id_start, transcript_id_stop - transcript_id_stop) ;
 			string& gene_id = gene_id_by_transcript_id.at(transcript_id) ;
 
 			// write cug line
