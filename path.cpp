@@ -196,7 +196,7 @@ string Path::to_relative_path_string() {
 
 	// tokenize cwd
 	vector<string> cwd_tokens ; 
-	token_stream = istringstream(cwd_path.abs_path_str) ;
+	istringstream token_stream (cwd_path.abs_path_str) ;
 	while (getline(token_stream, token, '/')) cwd_tokens.push_back(token) ;
 
 	// tokenize abs path str
