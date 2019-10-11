@@ -8,6 +8,7 @@
 #include <stack>
 #include <sstream>
 #include <iostream>
+#include <fstream>
 
 #include "sample.h"
 #include "whitelist.h"
