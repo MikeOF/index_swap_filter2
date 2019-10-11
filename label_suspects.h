@@ -22,6 +22,7 @@ struct Align_suspect_reads_args {
 	string star_reference_path ;
 	string alignment_dir_path ;
 	string suspect_reads_fastq ;
+	int threads ;
 } ;
 
 int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args>) ;

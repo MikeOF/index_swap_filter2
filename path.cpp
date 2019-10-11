@@ -11,8 +11,7 @@ Path::Path(const string& path_str_arg) {
 	// ignore paths with .. and . tokens that aren't just "."
 	if (path_str != ".") {
 		string token ;
-		istringstream token_stream ;
-		token_stream = istringstream(path_str) ;
+		istringstream token_stream (path_str);
 		while (getline(token_stream, token, '/')) {
 			if (token == "." || token == "..") throw runtime_error("unsupported path string") ;
 		}
