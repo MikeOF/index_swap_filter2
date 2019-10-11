@@ -112,7 +112,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		  		int transcript_id_end_pos = line.find("\"", transcript_id_start_pos) ;
 
 		  		string gene_id = line.substr(gene_id_start_pos, gene_id_start_pos - gene_id_end_pos) ;
-		  		string transcript_id = line.substr(transcript_id_start_pos, transcript_id_start_pos - transcript_id_end_pos)
+		  		string transcript_id = line.substr(transcript_id_start_pos, transcript_id_start_pos - transcript_id_end_pos) ;
 
 		  		cout << "gene_id: " + gene_id + " transcript_id: " + transcript_id + "\n" ;
 		  	}
