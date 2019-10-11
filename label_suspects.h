@@ -27,10 +27,12 @@ struct Align_suspect_reads_args {
 
 string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args>) ;
 
-struct Parse_sorted_suspect_labels_args {
-	unordered_map<string, string> sorted_label_path_by_sam_file_path ;
+struct Parse_sorted_cug_labels_args {
+	string sam_path ;
+	string cug_label_chunks_path ;
+	string cug_label_path ;
 } ;
 
-int parse_sorted_suspect_labels_task_func(Task<int, Parse_sorted_suspect_labels_args>) ;
+int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_suspect_labels_args>) ;
 
 #endif
