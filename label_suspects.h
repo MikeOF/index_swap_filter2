@@ -33,6 +33,6 @@ struct Parse_sorted_cug_labels_args {
 	string cug_label_path ;
 } ;
 
-int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_suspect_labels_args>) ;
+int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args>) ;
 
 #endif
