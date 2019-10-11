@@ -35,8 +35,8 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		Task<int, Parse_sorted_cug_labels_args> task ;
 		task.func = parse_sorted_cug_labels_task_func ;
 		task.args.sam_path = sam_path_by_star_reference_path.at(star_reference_path) ;
-		task.args.cug_label_chunks_path = workdir.get_cug_label_chunks_path() ;
-		task.args.cug_label_path = workdir.get_cug_label_path() ;
+		task.args.cug_label_chunks_path = workdir.get_cug_label_chunks_path(star_reference_path) ;
+		task.args.cug_label_path = workdir.get_cug_label_path(star_reference_path) ;
 		task.args.annotation_gtf_path = workdir.get_annotation_dir_path(star_reference_path) ;
 
 		parse_task_stack.push(task) ;
