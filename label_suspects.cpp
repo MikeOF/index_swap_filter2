@@ -27,6 +27,33 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		sam_path_by_cug_label_path.insert(
 			make_pair(workdir.get_cug_label_path(star_reference_path), sam_path)) ;
 	}
+
+	// create cug parsing tasks
+	for (string star_reference_path : workdir.get_star_reference_paths()) {
+
+		// get annotation gtf path
+		Path annotation_dir_path = star_reference_path.join("annotation") ;
+		if (!annotation_dir_path.is_dir()) {
+			throw runtime_error("too many gtf files found in star reference dir, " + star_reference_path) ;
+		}
+		
+		string annotation_gtf_path ;
+		int gtfs_found = 0 ;
+		for (string path : annotation_dir_path.get_dir_list()) {
+			if (path.substr(path.size()-4) == ".gtf") {
+				annotation_gtf_path = path ;
+				gtfs_found++;
+			}
+		}
+		if (gtfs_found > 1) throw runtime_error(
+			"too many gtf files found in star reference dir, " + star_reference_path) ;
+		if (gtfs_found == 0) throw runtime_error(
+			"could not find a gtf file in star reference dir, " + star_reference_path) ;
+
+		cout << "annotation gtf path: " << annotation_gtf_path << endl ;
+
+	}
+
 }
 
 string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task) {

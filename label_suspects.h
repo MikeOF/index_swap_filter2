@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <stack>
 #include <sstream>
+#include <iostream>
 
 #include "sample.h"
 #include "whitelist.h"
@@ -31,6 +32,7 @@ struct Parse_sorted_cug_labels_args {
 	string sam_path ;
 	string cug_label_chunks_path ;
 	string cug_label_path ;
+	string annotation_gtf_path ;
 } ;
 
 int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args>) ;
