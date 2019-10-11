@@ -51,6 +51,7 @@ int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args> task) {
     ss << "--readFilesCommand zcat " ;
     ss << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
     ss << "--outSAMprimaryFlag AllBestScore " ;
+    ss << "--quantTranscriptomeBAMcompression 0 " ;
 
     // call STAR
     int result = system(ss.str().c_str()) ;
