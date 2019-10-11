@@ -32,7 +32,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
 
 		// get annotation gtf path
-		Path annotation_dir_path = star_reference_path.join("annotation") ;
+		Path annotation_dir_path = Path(star_reference_path).join("annotation") ;
 		if (!annotation_dir_path.is_dir()) {
 			throw runtime_error("too many gtf files found in star reference dir, " + star_reference_path) ;
 		}
