@@ -28,7 +28,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 	}
 
 	// create cug parsing tasks
-	stack<Task<>> parse_task_stack ;
+	stack<Task<int, Parse_sorted_cug_labels_args>> parse_task_stack ;
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
 
 		// create the task
@@ -41,6 +41,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 
 		parse_task_stack.push(task) ;
 	}
+	run_tasks(threads, parse_task_stack) ;
 
 }
 
