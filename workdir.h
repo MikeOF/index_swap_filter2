@@ -31,6 +31,7 @@ class Workdir {
 
 	unordered_map<string, string> alignment_dir_path_by_star_reference_path ;
 	unordered_map<string, string> cug_label_path_by_star_reference_path ;
+	unordered_map<string, string> cug_label_chunks_path_by_star_reference_path ;
 
 	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
 
@@ -51,6 +52,7 @@ class Workdir {
 		string get_suspect_read_fastq_path(string) ;
 		string get_alignment_dir_path(string) ;
 		string get_cug_label_path(string) ;
+		string get_cug_label_chunks_path(string) ;
 		string get_swapped_in_read_ids_path(string) ;
 } ;
 

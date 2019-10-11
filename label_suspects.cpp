@@ -8,6 +8,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 	unordered_map<string, string> sam_path_by_cug_label_path ;
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
 
+		// create task for this star reference
 		Task<string, Align_suspect_reads_args> task ;
 		task.func = align_suspect_reads_task_func ;
 		task.args.star_reference_path = star_reference_path ;
@@ -18,14 +19,14 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		stack<Task<string, Align_suspect_reads_args>> task_stack ;
 		task_stack.push(task) ;
 
-		string sam_path = run_tasks(1, task_stack).top() ;
+		// run alignment task
+		stack<string> return_stack = run_tasks(1, task_stack) ;
+		string sam_path = return_stack.top() ;
 
 		// map sam path to cug label path
 		sam_path_by_cug_label_path.insert(
 			make_pair(workdir.get_cug_label_path(star_reference_path), sam_path)) ;
 	}
-
-
 }
 
 string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task) {
@@ -41,7 +42,6 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "STAR " ;
     ss_star_cmd << "--runThreadN " << to_string(threads) << " " ;
     ss_star_cmd << "--genomeDir " << star_reference_path << " " ;
-    ss_star_cmd << "--outSAMattributes AS " ;
     ss_star_cmd << "--quantMode TranscriptomeSAM " ;
     ss_star_cmd << "--outSAMtype SAM " ;
     ss_star_cmd << "--readFilesIn " << suspect_reads_fastq << " " ;
@@ -49,6 +49,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
     ss_star_cmd << "--outSAMprimaryFlag AllBestScore " ;
     ss_star_cmd << "--twopassMode Basic " ;
+    ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
 
     // call STAR
     int result = system(ss_star_cmd.str().c_str()) ;
@@ -70,6 +71,8 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
 }
 
 int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> task) {
+
+
 
 	return 0 ;
 }
