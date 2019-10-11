@@ -69,7 +69,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
 	return sam_path.to_string() ;
 }
 
-int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_suspect_labels_args> task) {
+int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> task) {
 
 	return 0 ;
 }
