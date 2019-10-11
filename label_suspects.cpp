@@ -43,8 +43,8 @@ int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args> task) {
     //    ])
     stringstream ss ;
     ss << "STAR " ;
-    ss << "--runThreadN', " << to_string(threads) << " " ;
-    ss << "--genomeDir', " << star_reference_path << " " ;
+    ss << "--runThreadN " << to_string(threads) << " " ;
+    ss << "--genomeDir " << star_reference_path << " " ;
     ss << "--quantMode TranscriptomeSAM " ;
     ss << "--outSAMtype SAM Unsorted " ;
     ss << "--readFilesIn " << suspect_reads_fastq << " " ;
