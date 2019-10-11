@@ -115,6 +115,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		  		string transcript_id = line.substr(transcript_id_start_pos, 
 		  			transcript_id_end_pos - transcript_id_start_pos) ;
 
+		  		// map the transcript to the gene id
 		  		if (gene_id_by_transcript_id.find(transcript_id) != gene_id_by_transcript_id.end()) {
 		  			if (gene_id != gene_id_by_transcript_id.at(transcript_id)) {
 		  				stringstream ss ;
@@ -124,14 +125,18 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		  				ss << gene_id_by_transcript_id.at(transcript_id) ;
 		  				throw runtime_error(ss.str()) ; 
 		  			}
+		  		} else {
+		  			gene_id_by_transcript_id.insert(make_pair(transcript_id, gene_id)) ;
 		  		}
-
-		  		cout << "gene_id: " + gene_id + " transcript_id: " + transcript_id + "\n" ;
 		  	}
 		  }
 		gtf_file.close() ;
 
 	} else { throw runtime_error("unable to open annotation gtf file: " + annotation_gtf_path) ; }
+
+	for (auto it = gene_id_by_transcript_id.begin(); it != gene_id_by_transcript_id.end(); ++it) {
+		cout << "gene_id: " + it->second + " transcript_id: " + it->first ;
+	}
 
 	return 0 ;
 }
