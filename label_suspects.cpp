@@ -101,42 +101,52 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	if (gtf_file.is_open()) {
 
-		  while (getline(gtf_file, line)) {
+		while (getline(gtf_file, line)) {
 
-		  	// parse transcript lines
-		  	if (line.find("\ttranscript\t") != string::npos) {
+			// parse transcript lines
+			if (line.find("\ttranscript\t") != string::npos) {
 
-		  		int gene_id_start_pos = line.find("\"", line.find("gene_id \"") + 1) + 1 ;
-		  		int gene_id_end_pos = line.find("\"", gene_id_start_pos) ;
-		  		int transcript_id_start_pos = line.find("\"", line.find("transcript_id \"") + 1) + 1 ;
-		  		int transcript_id_end_pos = line.find("\"", transcript_id_start_pos) ;
+				int gene_id_start_pos = line.find("\"", line.find("gene_id \"") + 1) + 1 ;
+				int gene_id_end_pos = line.find("\"", gene_id_start_pos) ;
+				int transcript_id_start_pos = line.find("\"", line.find("transcript_id \"") + 1) + 1 ;
+				int transcript_id_end_pos = line.find("\"", transcript_id_start_pos) ;
 
-		  		string gene_id = line.substr(gene_id_start_pos, gene_id_end_pos - gene_id_start_pos) ;
-		  		string transcript_id = line.substr(transcript_id_start_pos, 
-		  			transcript_id_end_pos - transcript_id_start_pos) ;
+				string gene_id = line.substr(gene_id_start_pos, gene_id_end_pos - gene_id_start_pos) ;
+				string transcript_id = line.substr(transcript_id_start_pos, 
+					transcript_id_end_pos - transcript_id_start_pos) ;
 
-		  		// map the transcript to the gene id
-		  		if (gene_id_by_transcript_id.find(transcript_id) != gene_id_by_transcript_id.end()) {
-		  			if (gene_id != gene_id_by_transcript_id.at(transcript_id)) {
-		  				stringstream ss ;
-		  				ss << "different gene ids for transcript id: " + transcript_id ;
-		  				ss << " annotation gtf path: " + annotation_gtf_path ;
-		  				ss << " gene_ids: " + gene_id + " " ;
-		  				ss << gene_id_by_transcript_id.at(transcript_id) ;
-		  				throw runtime_error(ss.str()) ; 
-		  			}
-		  		} else {
-		  			gene_id_by_transcript_id.insert(make_pair(transcript_id, gene_id)) ;
-		  		}
-		  	}
-		  }
+				// map the transcript to the gene id
+				if (gene_id_by_transcript_id.find(transcript_id) != gene_id_by_transcript_id.end()) {
+					if (gene_id != gene_id_by_transcript_id.at(transcript_id)) {
+						stringstream ss ;
+						ss << "different gene ids for transcript id: " + transcript_id ;
+						ss << " annotation gtf path: " + annotation_gtf_path ;
+						ss << " gene_ids: " + gene_id + " " ;
+						ss << gene_id_by_transcript_id.at(transcript_id) ;
+						throw runtime_error(ss.str()) ; 
+					}
+				} else {
+					gene_id_by_transcript_id.insert(make_pair(transcript_id, gene_id)) ;
+				}
+			}
+		}
 		gtf_file.close() ;
 
 	} else { throw runtime_error("unable to open annotation gtf file: " + annotation_gtf_path) ; }
 
-	for (auto it = gene_id_by_transcript_id.begin(); it != gene_id_by_transcript_id.end(); ++it) {
-		cout << "gene_id: " + it->second + " transcript_id: " + it->first ;
-	}
+	// read sam file to write out the cug label file
+	ifstream sam_file (sam_path) ;
+	GzChunkSortWriter<string> gz_csw_out (cug_label_chunks_path) ;
+	if (sam_file.is_open()) {
+
+		while(getline(sam_file, line)) {
+
+			cout << line << endl ;
+
+		}
+		sam_file.close() ;
+
+	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
 	return 0 ;
 }
