@@ -68,7 +68,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
 
     // call STAR
-    int result = system(ss_star_cmd.str().c_str()) ;
+    //int result = system(ss_star_cmd.str().c_str()) ;
 
     // create samtools command to decompress BAM file
     Path alignment_dir_Path (alignment_dir_path) ;
@@ -81,7 +81,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_samtools_cmd << sam_path.to_string() ;
 
     // call samtools
-    result = system(ss_samtools_cmd.str().c_str()) ;
+    //result = system(ss_samtools_cmd.str().c_str()) ;
 
 	return sam_path.to_string() ;
 }
