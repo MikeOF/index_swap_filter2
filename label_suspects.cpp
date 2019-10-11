@@ -41,6 +41,9 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
     ss_star_cmd << "--outSAMprimaryFlag AllBestScore " ;
     ss_star_cmd << "--quantTranscriptomeBAMcompression 0 " ;
+    ss_star_cmd << "--outMultimapperOrder Random " ;
+    ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
+    ss_star_cmd << "--twopassMode Basic " ;
 
     // call STAR
     int result = system(ss_star_cmd.str().c_str()) ;
