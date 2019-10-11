@@ -15,6 +15,7 @@
 #include "workdir.h"
 #include "task_pool.h"
 #include "path.h"
+#include "gzchunksort.h"
 
 using namespace std ;
 
