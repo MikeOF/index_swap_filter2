@@ -11,6 +11,7 @@
 #include "barcode_seqnum_read_ids.h"
 #include "suspect_barcodes.h"
 #include "suspect_read_fastqs.h"
+#include "label_suspects.h"
 
 using namespace std ;
 
@@ -120,6 +121,9 @@ int main(int argc, char ** argv) {
 
 	// write out suspect read fastqs
 	write_suspect_read_fastqs(threads, samples, workdir) ;
+
+	// write out suspect labels
+	label_suspect_reads(threads, samples, workdir) ;
 
 	return 0;
 }

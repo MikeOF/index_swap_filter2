@@ -18,9 +18,11 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 	this->suspect_read_fastq_path = this->base_dir_path.join("global_suspect_read.fastq.gz").to_string() ;
 
 	// make the CUG label dir path
-	this->cug_label_base_dir_path = this->base_dir_path.join('cell_umi_gene_labels') ;
+	this->cug_label_base_dir_path = this->base_dir_path.join("cell_umi_gene_labels") ;
 	this->cug_label_base_dir_path.make_dir() ;
 
+
+	unordered_set<string> alignment_dir_path_set ;
 	for (auto it = samples.begin(); it != samples.end(); ++it) {
 
 		// parse sample iterator
@@ -29,18 +31,19 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 
 		// create alignment dir / cug file to star ref mapping if necessary
 		string star_reference_path = sample.get_star_reference_path() ; 
-		unordered_set<string> alignment_dir_path_set ;
-		if (this->alignment_dir_by_star_reference_path.find(star_reference_path) 
-			== this->alignment_dir_by_star_reference_path.end()) {
+
+		if (this->alignment_dir_path_by_star_reference_path.find(star_reference_path) 
+			== this->alignment_dir_path_by_star_reference_path.end()) {
 
 			// get count tag and star reference "name"
 			int dir_name_cnt = 1 ;
 			string star_reference_name = Path(star_reference_path).get_filename() ;
 
-			// get a unique alignment dir path for this star reference
+			// get the alignment dir path for this star reference
 			Path alignment_dir_path = this->cug_label_base_dir_path.join(
 				star_reference_name + "-" + to_string(dir_name_cnt)) ;
 
+			// make sure the alignment dir path is unique
 			while(alignment_dir_path_set.find(alignment_dir_path.to_string()) != alignment_dir_path_set.end()) {
 
 				alignment_dir_path = this->cug_label_base_dir_path.join(
@@ -48,14 +51,17 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 			}
 			alignment_dir_path_set.insert(alignment_dir_path.to_string()) ;
 
+			// make the alignment dir
+			alignment_dir_path.make_dir() ;
+
 			// create cug label path
-			Path cug_file = alignment_dir_path.join('cug_label.txt.gz') ;
+			Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
 
 			// add reference path & cug label path / alignment dir to map
 			this->alignment_dir_path_by_star_reference_path.insert(
 				make_pair(star_reference_path, alignment_dir_path.to_string())) ;
 			this->cug_label_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, cug_file.to_string())) ;
+				make_pair(star_reference_path, cug_label_path.to_string())) ;
 		}
 
 		// store sample_key
