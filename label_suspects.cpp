@@ -111,8 +111,20 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		  		int transcript_id_start_pos = line.find("transcript_id \"") + 1 ;
 		  		int transcript_id_end_pos = line.find("\"", transcript_id_start_pos) ;
 
-		  		string gene_id = line.substr(gene_id_start_pos, gene_id_start_pos - gene_id_end_pos) ;
-		  		string transcript_id = line.substr(transcript_id_start_pos, transcript_id_start_pos - transcript_id_end_pos) ;
+		  		string gene_id = line.substr(gene_id_start_pos, gene_id_end_pos - gene_id_start_pos) ;
+		  		string transcript_id = line.substr(transcript_id_start_pos, 
+		  			transcript_id_end_pos - transcript_id_start_pos) ;
+
+		  		if (gene_id_by_transcript_id.find(transcript_id) != gene_id_by_transcript_id.end()) {
+		  			if (gene_id != gene_id_by_transcript_id.at(transcript_id)) {
+		  				stringstream ss ;
+		  				ss << "different gene ids for transcript id: " + transcript_id ;
+		  				ss << " annotation gtf path: " + annotation_gtf_path ;
+		  				ss << " gene_ids: " + gene_id + " " ;
+		  				ss << gene_id_by_transcript_id.at(transcript_id) ;
+		  				throw runtime_error(ss.str()) ; 
+		  			}
+		  		}
 
 		  		cout << "gene_id: " + gene_id + " transcript_id: " + transcript_id + "\n" ;
 		  	}
