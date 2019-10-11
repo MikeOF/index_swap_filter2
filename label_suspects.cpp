@@ -144,10 +144,14 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	} else { throw runtime_error("unable to open annotation gtf file: " + annotation_gtf_path) ; }
 
-	// read sam file to write out the cug label file
+	// write out the cug lines
 	ifstream sam_file (sam_path) ;
-	GzChunkSortWriter<string> gz_csw_out (cug_label_chunks_path) ;
 	if (sam_file.is_open()) {
+
+		GzChunkSortWriter<string> gz_csw_out (cug_label_chunks_path) ;
+		string current_read_id ;
+		unordered_set<string> gene_id_set ;
+		int delim_size = SUSPECT_FASTQ_READ_ID_DELIM.size() ;
 
 		while(getline(sam_file, line)) {
 
@@ -155,21 +159,31 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 			int read_id_stop = line.find(SUSPECT_FASTQ_READ_ID_DELIM) ;
 			string read_id = line.substr(0, read_id_stop) ;
 
+			// refresh current read id tracker
+			if (read_id != current_read_id) {
+				current_read_id = read_id ;
+				gene_id_set.clear() ;
+			}
+
 			// get sample key
-			int sample_key_start = read_id_stop + 1 ;
+			int sample_key_start = read_id_stop + delim_size ;
 			int sample_key_stop = line.find(SUSPECT_FASTQ_READ_ID_DELIM, sample_key_start) ;
 			string sample_key = line.substr(sample_key_start, sample_key_stop - sample_key_start) ;
 
 			// get barcode
-			int barcode_start = sample_key_stop + 1 ;
+			int barcode_start = sample_key_stop + delim_size ;
 			int barcode_stop = line.find('\t', barcode_start) ;
 			string barcode = line.substr(barcode_start, barcode_stop - barcode_start) ;
 
 			// get transcript id & gene id
 			int transcript_id_start = line.find('\t', barcode_stop + 1) + 1 ;
 			int transcript_id_stop = line.find('\t', transcript_id_start) ;
-			string transcript_id = line.substr(transcript_id_start, transcript_id_stop - transcript_id_stop) ;
+			string transcript_id = line.substr(transcript_id_start, transcript_id_stop - transcript_id_start) ;
 			string& gene_id = gene_id_by_transcript_id.at(transcript_id) ;
+
+			// don't write out duplicate cug lines
+			if (gene_id_set.find(gene_id) != gene_id_set.end()) continue ; 
+			gene_id_set.insert(gene_id) ;
 
 			// write cug line
 			stringstream ss_key ;
@@ -180,7 +194,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 			gz_csw_out.write_line(ss_key.str(), ss_line.str()) ;
 		}
 		sam_file.close() ;
-		gz_csw_out.flush_close() ;
+		gz_csw_out.flush_close();
 
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
