@@ -146,6 +146,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	// write out the cug lines
 	ifstream sam_file (sam_path) ;
+	vector<string> cug_chunk_files ;
 	if (sam_file.is_open()) {
 
 		GzChunkSortWriter<string> gz_csw_out (cug_label_chunks_path) ;
@@ -195,10 +196,11 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		}
 		sam_file.close() ;
 		gz_csw_out.flush_close();
+		cug_chunk_files = gz_csw_out.get_files() ;
 
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
-	collect_sorted_chunks<string>(cug_label_path, gz_csw_out.get_files(), get_cug_key) ;
+	collect_sorted_chunks<string>(cug_label_path, cug_chunk_files, get_cug_key) ;
 
 	return 0 ;
 }
