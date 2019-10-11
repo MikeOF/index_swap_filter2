@@ -108,7 +108,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 		  		int gene_id_start_pos = line.find("\"", line.find("gene_id \"") + 1) + 1 ;
 		  		int gene_id_end_pos = line.find("\"", gene_id_start_pos) ;
-		  		int transcript_id_start_pos = line.fine("\"", line.find("transcript_id \"") + 1) + 1 ;
+		  		int transcript_id_start_pos = line.find("\"", line.find("transcript_id \"") + 1) + 1 ;
 		  		int transcript_id_end_pos = line.find("\"", transcript_id_start_pos) ;
 
 		  		string gene_id = line.substr(gene_id_start_pos, gene_id_end_pos - gene_id_start_pos) ;
