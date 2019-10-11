@@ -54,6 +54,26 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 			// make the alignment dir
 			alignment_dir_path.make_dir() ;
 
+			// get annotation gtf path
+			Path annotation_dir_path = Path(star_reference_path).join("annotation") ;
+			if (!annotation_dir_path.is_dir()) {
+				throw runtime_error("too many gtf files found in star reference dir, " + star_reference_path) ;
+			}
+			
+			string annotation_gtf_path ;
+			int gtfs_found = 0 ;
+			for (string path : annotation_dir_path.get_dir_list()) {
+				if (path.substr(path.size()-4) == ".gtf") {
+					annotation_gtf_path = path ;
+					gtfs_found++;
+				}
+			}
+			if (gtfs_found > 1) throw runtime_error(
+				"too many gtf files found in star reference dir, " + star_reference_path) ;
+			if (gtfs_found == 0) throw runtime_error(
+				"could not find a gtf file in star reference dir, " + star_reference_path) ;
+
+
 			// create cug label path & chunks path
 			Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
 			Path cug_label_chunks_path = alignment_dir_path.join("cug_label_chunks") ;
@@ -65,6 +85,8 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 				make_pair(star_reference_path, cug_label_path.to_string())) ;
 			this->cug_label_chunks_path_by_star_reference_path.insert(
 				make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
+			this->annotation_gtf_path_by_star_reference_path.insert(
+				make_pair(star_reference_path, annotation_gtf_path)) ;
 		}
 
 		// store sample_key
@@ -143,6 +165,10 @@ string Workdir::get_suspect_read_fastq_path(string sample_key) {
 
 string Workdir::get_alignment_dir_path(string star_ref_path) {
 	return this->alignment_dir_path_by_star_reference_path.at(star_ref_path) ;
+}
+
+string Workdir::get_annotation_dir_path(string star_ref_path) {
+	return this->annotation_gtf_path_by_star_reference_path.at(star_ref_path) ;
 }
 
 string Workdir::get_cug_label_path(string star_ref_path) {
