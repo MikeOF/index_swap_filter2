@@ -18,7 +18,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		stack<Task<string, Align_suspect_reads_args>> task_stack ;
 		task_stack.push(task) ;
 
-		string sam_path = run_tasks(1, task_stack) ;
+		string sam_path = run_tasks(1, task_stack).top() ;
 
 		// map sam path to cug label path
 		sam_path_by_cug_label_path.insert(
