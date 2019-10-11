@@ -25,7 +25,7 @@ struct Align_suspect_reads_args {
 	int threads ;
 } ;
 
-int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args>) ;
+string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args>) ;
 
 struct Parse_sorted_suspect_labels_args {
 	unordered_map<string, string> sorted_label_path_by_sam_file_path ;

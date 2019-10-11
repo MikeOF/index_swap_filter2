@@ -7,21 +7,21 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 	// run alignment tasks
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
 
-		Task<int, Align_suspect_reads_args> task ;
+		Task<string, Align_suspect_reads_args> task ;
 		task.func = align_suspect_reads_task_func ;
 		task.args.star_reference_path = star_reference_path ;
 		task.args.alignment_dir_path = workdir.get_alignment_dir_path(star_reference_path) ;
 		task.args.suspect_reads_fastq = workdir.get_suspect_read_fastq_path() ;
 		task.args.threads = threads ;
 
-		stack<Task<int, Align_suspect_reads_args>> task_stack ;
+		stack<Task<string, Align_suspect_reads_args>> task_stack ;
 		task_stack.push(task) ;
 
 		run_tasks(1, task_stack) ;
 	}
 }
 
-int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args> task) {
+string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task) {
 
 	// Parse arguments
 	string& star_reference_path = task.args.star_reference_path ;
@@ -29,34 +29,36 @@ int align_suspect_reads_task_func(Task<int, Align_suspect_reads_args> task) {
 	string& suspect_reads_fastq = task.args.suspect_reads_fastq ;
 	int threads = task.args.threads ;
 
-	// create STAR command
-	// self.command = " ".join([
-    //        'STAR --runThreadN', str(self.threads),
-    //        '--outSAMattributes NH NM AS nM',
-    //        '--genomeDir', self.ref_dir,
-    //        '--quantMode TranscriptomeSAM',
-    //        '--outSAMtype BAM Unsorted',
-    //        '--readFilesIn', self.read_file,
-    //        '--readFilesCommand zcat ',
-    //        '--outFileNamePrefix', self.out_prefix,
-    //        '--outSAMprimaryFlag AllBestScore'
-    //    ])
-    stringstream ss ;
-    ss << "STAR " ;
-    ss << "--runThreadN " << to_string(threads) << " " ;
-    ss << "--genomeDir " << star_reference_path << " " ;
-    ss << "--quantMode TranscriptomeSAM " ;
-    ss << "--outSAMtype SAM " ;
-    ss << "--readFilesIn " << suspect_reads_fastq << " " ;
-    ss << "--readFilesCommand zcat " ;
-    ss << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
-    ss << "--outSAMprimaryFlag AllBestScore " ;
-    ss << "--quantTranscriptomeBAMcompression 0 " ;
+	// create STAR command to align suspect reads
+    stringstream ss_star_cmd ;
+    ss_star_cmd << "STAR " ;
+    ss_star_cmd << "--runThreadN " << to_string(threads) << " " ;
+    ss_star_cmd << "--genomeDir " << star_reference_path << " " ;
+    ss_star_cmd << "--quantMode TranscriptomeSAM " ;
+    ss_star_cmd << "--outSAMtype SAM " ;
+    ss_star_cmd << "--readFilesIn " << suspect_reads_fastq << " " ;
+    ss_star_cmd << "--readFilesCommand zcat " ;
+    ss_star_cmd << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
+    ss_star_cmd << "--outSAMprimaryFlag AllBestScore " ;
+    ss_star_cmd << "--quantTranscriptomeBAMcompression 0 " ;
 
     // call STAR
-    int result = system(ss.str().c_str()) ;
+    int result = system(ss_star_cmd.str().c_str()) ;
 
-	return 0 ;
+    // create samtools command to decompress BAM file
+    Path alignment_dir_Path (alignment_dir_path) ;
+    Path bam_path = alignment_dir_Path.join("Aligned.toTranscriptome.out.bam") ;
+    Path sam_path = alignment_dir_Path.join("Aligned.toTranscriptome.out.sam") ;
+    stringstream ss_samtools_cmd ;
+    ss_samtools_cmd << "samtools view " ;
+    ss_samtools_cmd << bam_path.to_string() ;
+    ss_samtools_cmd << " > " ;
+    ss_samtools_cmd << sam_path.to_string() ;
+
+    // call samtools
+    result = system(ss_samtools_cmd.str().c_str()) ;
+
+	return sam_path.to_string() ;
 }
 
 int parse_sorted_suspect_labels_task_func(Task<int, Parse_sorted_suspect_labels_args> task) {
