@@ -188,7 +188,6 @@ string Path::to_relative_path_string() {
 
 	// tvars
 	string token ;
-	istringstream token_stream ;
 
 	char buf [PATH_MAX] ;
 	getcwd(buf, PATH_MAX) ;
@@ -196,13 +195,13 @@ string Path::to_relative_path_string() {
 
 	// tokenize cwd
 	vector<string> cwd_tokens ; 
-	istringstream token_stream (cwd_path.abs_path_str) ;
-	while (getline(token_stream, token, '/')) cwd_tokens.push_back(token) ;
+	istringstream cwd_token_stream (cwd_path.abs_path_str) ;
+	while (getline(cwd_token_stream, token, '/')) cwd_tokens.push_back(token) ;
 
 	// tokenize abs path str
 	vector<string> this_tokens ; 
-	token_stream = istringstream(this->abs_path_str) ;
-	while (getline(token_stream, token, '/')) this_tokens.push_back(token) ;
+	istringstream abs_token_stream (this->abs_path_str) ;
+	while (getline(abs_token_stream, token, '/')) this_tokens.push_back(token) ;
 
 	// create a relative path of tokens
 	vector<string> relative_path_tokens ;
