@@ -7,6 +7,7 @@
 #include <dirent.h>
 #include <cstring>
 #include <unordered_set>
+#include <stdexcept>
 
 #include "path.h"
 

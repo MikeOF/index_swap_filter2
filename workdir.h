@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <stdexcept>
 
 #include "path.h"
 #include "sample.h"

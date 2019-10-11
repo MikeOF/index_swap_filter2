@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <stdexcept>
 
 #include "path.h"
 #include "sample.h"

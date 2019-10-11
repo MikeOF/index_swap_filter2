@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <sstream>
 #include <tuple>
+#include <stdexcept>
 
 #include "sample.h"
 #include "whitelist.h"
