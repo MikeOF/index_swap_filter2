@@ -5,6 +5,7 @@ using namespace std ;
 void write_swapped_reads(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 
 	// create a swap calling task for each CUG path
+	vector<string> called_swaps_paths ;
 	stack<Task<int, Call_swapped_reads_args>> call_swaps_task_stack ;
 	for (string star_ref_path : workdir.get_star_reference_paths()) {
 
@@ -13,14 +14,30 @@ void write_swapped_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		task.args.cug_label_path = workdir.get_cug_label_path(star_ref_path) ;
 		task.args.called_swaps_path = workdir.get_called_swaps_path(star_ref_path) ;
 
+		called_swaps_paths.push_back(task.args.called_swaps_path) ;
+
 		call_swaps_task_stack.push(task) ;
 	}
 	run_tasks(threads, call_swaps_task_stack) ;
+
+	// create a swap collecting task for each sample
+	stack<Task<int, Collect_swapped_reads_args>> collect_swaps_task_stack ;
+	for (string sample_key : workdir.get_sample_keys()) {
+
+		Task<int, Collect_swapped_reads_args> task ;
+		task.func = collect_swapped_reads_task_func ;
+		task.args.called_swaps_paths = called_swaps_paths ;
+		task.args.swapped_in_read_ids_path = workdir.get_swapped_in_read_ids_path(sample_key) ;
+		task.args.sample_key = sample_key ;
+
+		collect_swaps_task_stack.push(task) ;
+	}
+	run_tasks(threads, collect_swaps_task_stack) ;
 }
 
 int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args> task) {
 
-	// parse arg
+	// parse args
 	string cug_label_path = task.args.cug_label_path ;
 	string called_swaps_path = task.args.called_swaps_path ;
 
@@ -77,10 +94,11 @@ int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args> task) {
 			for (auto it = read_ids_by_sample_key.begin(); it != read_ids_by_sample_key.end(); ++it) {
 
 				if (it->second.size() < limit) {
-					for (string swap_read_id : it->second) { gzout.write_line(it->first + swap_read_id) ; }
-					cout << "size below limit " + to_string(it->second.size()) + " limit: " + to_string(limit) + "\n" ;
-				} else {
-					cout << "size above limit " + to_string(it->second.size()) + " limit: " + to_string(limit) + "\n" ;
+					for (string swap_read_id : it->second) { 
+						stringstream ss ;
+						ss << it->first << "\t" << swap_read_id ;
+						gzout.write_line(ss.str()) ; 
+					}
 				}
 			}
 
@@ -97,6 +115,54 @@ int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args> task) {
 	}
 	gzout.flush_close() ;
 
+	return 0 ;
+}
+
+int collect_swapped_reads_task_func(Task<int, Collect_swapped_reads_args> task) {
+
+	// parse args
+	vector<string> called_swaps_paths = task.args.called_swaps_paths ;
+	string swapped_in_read_ids_path = task.args.swapped_in_read_ids_path ;
+	string sample_key = task.args.sample_key ;
+
+	// log header
+	string sample_name = sample_key.substr(0, sample_key.find('_')) ;
+	string project_name = sample_key.substr(sample_key.find('_') + 1) ;
+	string log_header = project_name + " - " + sample_name + " : " ; 
+
+	unordered_set<string> swapped_in_read_ids ;
+
+	// gather swapped in read ids from each called swaps path
+	for (string called_swaps_path : called_swaps_paths) {
+
+		Gzin gzin (called_swaps_path) ;
+		while (gzin.has_next_line()) {
+
+			string line = gzin.read_line() ;
+
+			int sample_key_stop =  line.find('\t') ;
+			string line_sample_key = line.substr(0, sample_key_stop) ;
+			
+			if (line_sample_key == sample_key) {
+
+				swapped_in_read_ids.insert(line.substr(sample_key_stop + 1)) ;
+			}
+
+		}
+	}
+
+	// write out all the swapped in reads' ids
+	Gzout gzout (swapped_in_read_ids_path) ;
+	for (string read_id : swapped_in_read_ids) {
+		gzout.write_line(read_id) ;
+	}
+	gzout.flush_close() ;
+
+	// log activity
+	string msg = log_header + to_string(swapped_in_read_ids.size()) ;
+	msg += " swapped in read ids written to " + swapped_in_read_ids_path + "\n" ;
+	cout << msg ;
+ 
 	return 0 ;
 }
 

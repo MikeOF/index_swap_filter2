@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 #include <stdexcept>
 #include <stack>
 
@@ -23,5 +24,13 @@ struct Call_swapped_reads_args {
 } ;
 
 int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args>) ;
+
+struct Collect_swapped_reads_args {
+	vector<string> called_swaps_paths ;
+	string swapped_in_read_ids_path ;
+	string sample_key ;
+} ;
+
+int collect_swapped_reads_task_func(Task<int, Collect_swapped_reads_args>) ;
 
 #endif
