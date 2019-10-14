@@ -78,6 +78,9 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 			Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
 			Path cug_label_chunks_path = alignment_dir_path.join("cug_label_chunks") ;
 
+			// create swaps path
+			Path called_swaps_path = alignment_dir_path.join("called_swaps.txt.gz") ;
+
 			// add reference path & cug label path / alignment dir to map
 			this->alignment_dir_path_by_star_reference_path.insert(
 				make_pair(star_reference_path, alignment_dir_path.to_string())) ;
@@ -87,6 +90,8 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 				make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
 			this->annotation_gtf_path_by_star_reference_path.insert(
 				make_pair(star_reference_path, annotation_gtf_path)) ;
+			this->called_swaps_path_by_star_reference_path.insert(
+				make_pair(star_reference_path, called_swaps_path.to_string())) ;
 		}
 
 		// store sample_key
@@ -177,6 +182,10 @@ string Workdir::get_cug_label_path(string star_ref_path) {
 
 string Workdir::get_cug_label_chunks_path(string star_ref_path) {
 	return this->cug_label_chunks_path_by_star_reference_path.at(star_ref_path) ;
+}
+
+string  Workdir::get_called_swaps_path(string star_ref_path) {
+	return this->called_swaps_path_by_star_reference_path.at(star_ref_path) ;
 }
 
 string Workdir::get_swapped_in_read_ids_path(string sample_key) {

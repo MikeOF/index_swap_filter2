@@ -11,7 +11,6 @@
 #include <fstream>
 
 #include "sample.h"
-#include "whitelist.h"
 #include "workdir.h"
 #include "task_pool.h"
 #include "path.h"

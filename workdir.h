@@ -33,6 +33,7 @@ class Workdir {
 	unordered_map<string, string> annotation_gtf_path_by_star_reference_path ;
 	unordered_map<string, string> cug_label_path_by_star_reference_path ;
 	unordered_map<string, string> cug_label_chunks_path_by_star_reference_path ;
+	unordered_map<string, string> called_swaps_path_by_star_reference_path ;
 
 	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
 
@@ -55,6 +56,7 @@ class Workdir {
 		string get_annotation_dir_path(string) ;
 		string get_cug_label_path(string) ;
 		string get_cug_label_chunks_path(string) ;
+		string get_called_swaps_path(string) ;
 		string get_swapped_in_read_ids_path(string) ;
 } ;
 

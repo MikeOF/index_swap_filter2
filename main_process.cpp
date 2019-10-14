@@ -13,6 +13,7 @@
 #include "suspect_barcodes.h"
 #include "suspect_read_fastqs.h"
 #include "label_suspects.h"
+#include "swapped_reads.h"
 
 using namespace std ;
 
@@ -125,6 +126,9 @@ int main(int argc, char ** argv) {
 
 	// write out suspect labels
 	label_suspect_reads(threads, samples, workdir) ;
+
+	// call swaps
+	write_swapped_reads(threads, samples, workdir) ;
 
 	return 0;
 }
