@@ -99,8 +99,10 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 		for (string fastq_name : fastq_name_set) {
 			while (seq_cnt_by_fastq_name.at(fastq_name) < suspect_line_number) {
 
+				// first check to see if this seq fastq has more lines to read
 				if (!gzin_ptr_by_fastq_name.at(fastq_name)->has_next_line()) {
 					to_evict.push(fastq_name) ; 
+					break ;
 				}
 
 				vector<string>& seq_lines = seq_lines_by_fastq_name.at(fastq_name) ;

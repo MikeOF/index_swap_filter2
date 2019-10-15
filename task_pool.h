@@ -28,7 +28,7 @@ stack<R> run_tasks(int threads, stack<Task<R, A>> task_stack) {
 	vector<future<R>> children; 
 	stack<R> return_stack ;
 	chrono::seconds wait_span (1) ;
-	chrono::seconds sleep_span (1) ;
+	chrono::seconds sleep_span (10) ;
 
 	// transfer tasks to a vector
 	while(!task_stack.empty()) {
