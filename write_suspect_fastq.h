@@ -1,14 +1,14 @@
-#ifndef SUSPECT_READ_FASTQS_H
-#define SUSPECT_READ_FASTQS_H
+#ifndef WRITE_SUSPECT_FASTQ_H
+#define WRITE_SUSPECT_FASTQ_H
 
 #include <iostream>
 #include <stack>
 #include <sstream>
 
-#include "gzfiles.h"
+#include "gzfile.h"
 #include "task_pool.h"
 #include "gzchunksort.h"
-#include "barcode_seqnum_read_ids.h"
+#include "write_barcode_seqnum_read_ids.h"
 
 using namespace std ;
 

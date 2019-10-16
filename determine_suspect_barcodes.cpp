@@ -1,4 +1,4 @@
-#include "suspect_barcodes.h"
+#include "determine_suspect_barcodes.h"
 
 void write_out_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 

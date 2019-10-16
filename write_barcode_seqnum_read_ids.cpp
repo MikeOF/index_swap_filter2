@@ -1,4 +1,4 @@
-#include "barcode_seqnum_read_ids.h"
+#include "write_barcode_seqnum_read_ids.h"
 
 using namespace std ;
 

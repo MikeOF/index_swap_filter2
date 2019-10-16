@@ -1,5 +1,5 @@
-#ifndef GZFILES_H
-#define GZFILES_H
+#ifndef GZFILE_H
+#define GZFILE_H
 
 #include <zlib.h>
 #include <string>

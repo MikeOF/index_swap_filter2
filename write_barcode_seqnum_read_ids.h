@@ -1,5 +1,5 @@
-#ifndef BARCODE_SEQNUM_READ_IDS_H
-#define BARCODE_SEQNUM_READ_IDS_H
+#ifndef WRITE_BARCODE_SEQNUM_READ_IDS_H
+#define WRITE_BARCODE_SEQNUM_READ_IDS_H
 
 #include <iostream>
 #include <vector>
@@ -14,7 +14,7 @@
 #include "whitelist.h"
 #include "workdir.h"
 #include "task_pool.h"
-#include "gzfiles.h"
+#include "gzfile.h"
 #include "path.h"
 #include "gzchunksort.h"
 

@@ -1,5 +1,5 @@
-#ifndef SUSPECT_BARCODES_H
-#define SUSPECT_BARCODES_H
+#ifndef DETERMINE_SUSPECT_BARCODES_H
+#define DETERMINE_SUSPECT_BARCODES_H
 
 #include <iostream>
 #include <vector>
@@ -8,10 +8,10 @@
 #include <string>
 #include <unordered_map>
 
-#include "gzfiles.h"
+#include "gzfile.h"
 #include "task_pool.h"
 #include "gzchunksort.h"
-#include "barcode_seqnum_read_ids.h"
+#include "write_barcode_seqnum_read_ids.h"
 
 using namespace std ;
 

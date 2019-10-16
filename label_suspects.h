@@ -15,7 +15,7 @@
 #include "task_pool.h"
 #include "path.h"
 #include "gzchunksort.h"
-#include "suspect_read_fastqs.h"
+#include "write_suspect_fastq.h"
 
 using namespace std ;
 

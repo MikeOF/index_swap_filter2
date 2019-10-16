@@ -1,5 +1,5 @@
-#ifndef SWAPPED_READS_H
-#define SWAPPED_READS_H
+#ifndef CALL_SWAPPED_READS_H
+#define CALL_SWAPPED_READS_H
 
 #include <string>
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <stack>
 
-#include "gzfiles.h"
+#include "gzfile.h"
 #include "sample.h"
 #include "workdir.h"
 #include "task_pool.h"

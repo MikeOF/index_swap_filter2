@@ -9,11 +9,11 @@
 #include "workdir.h"
 #include "whitelist.h"
 #include "task_pool.h"
-#include "barcode_seqnum_read_ids.h"
-#include "suspect_barcodes.h"
-#include "suspect_read_fastqs.h"
+#include "write_barcode_seqnum_read_ids.h"
+#include "determine_suspect_barcodes.h"
+#include "write_suspect_fastq.h"
 #include "label_suspects.h"
-#include "swapped_reads.h"
+#include "call_swapped_reads.h"
 
 using namespace std ;
 

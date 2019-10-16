@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-#include "gzfiles.h"
+#include "gzfile.h"
 #include "path.h"
 
 using namespace std ;
