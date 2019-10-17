@@ -47,9 +47,12 @@ int main(int argc, char ** argv) {
 void show_detect_usage(string name) {
     cerr << "Usage: " 
     << name 
-    << " threads work_dir_path sample_def sample_def [sample_def ...]" << endl
+    << " threads work_dir_path star_reference_list sample_def sample_def [sample_def ...]"
+    << endl << endl
+    << "\tstar_reference_list: <star ref path>,<gtf path>,[<star ref path>,<gtf path>, ...]"
+    << endl << endl
     << "\tsample_def: <project_name>,<sample_name>,<whitelist_path>,<fastq_dir_path>,"
-    << "<star_reference_path>,<barcode_key>,<barcode_fq_pattern>,<sequence_fq_pattern>" << endl
+    << "<barcode_key>,<barcode_fq_pattern>,<sequence_fq_pattern>" << endl
     << "\t\tbarcode_key: [N ...]C[C ...][N ...]U[U ...][N ...] "
     <<"or [N ...]U[U ...][N ...]C[C ...][N ...]"
     << endl ;
@@ -159,4 +162,14 @@ void detect(int argc, char ** argv) {
 
 	// call swaps
 	write_swapped_reads(threads, samples, workdir) ;
+}
+
+void show_filter_usage(string name) {
+	cerr << "Usage: " 
+	<< name 
+	<< " threads output_dir fastq_path [fastq_path ...] " << endl << endl ;
+}
+
+void filter(int argc, char ** argv) {
+
 }

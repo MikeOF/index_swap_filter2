@@ -60,6 +60,9 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 		// make the alignment dir
 		alignment_dir_path.make_dir() ;
 
+		// create the alignment sam path
+		Path sam_path = alignment_dir_path.join("star_transcriptome_coordinates.sam") ;
+
 		// create cug label path & chunks path
 		Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
 		Path cug_label_chunks_path = alignment_dir_path.join("cug_label_chunks") ;
@@ -70,10 +73,16 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 		// add reference associated paths to maps
 		this->alignment_dir_path_by_star_reference_path.insert(
 			make_pair(star_reference_path, alignment_dir_path.to_string())) ;
+
+		this->sam_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, sam_path.to_string())) ;
+
 		this->cug_label_path_by_star_reference_path.insert(
 			make_pair(star_reference_path, cug_label_path.to_string())) ;
+
 		this->cug_label_chunks_path_by_star_reference_path.insert(
 			make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
+
 		this->called_swaps_path_by_star_reference_path.insert(
 			make_pair(star_reference_path, called_swaps_path.to_string())) ;
 	}
@@ -161,6 +170,10 @@ string Workdir::get_suspect_read_fastq_path(string sample_key) {
 
 string Workdir::get_alignment_dir_path(string star_ref_path) {
 	return this->alignment_dir_path_by_star_reference_path.at(star_ref_path) ;
+}
+
+string Workdir::get_sam_path(string star_ref_path) {
+	return this->sam_path_by_star_reference_path.at(star_ref_path) ;
 }
 
 string Workdir::get_annotation_dir_path(string star_ref_path) {
