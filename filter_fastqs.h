@@ -4,6 +4,7 @@
 #include <string>
 #include <iostream>
 #include <unordered_set>
+#include <unordered_map>
 #include <stdexcept>
 
 #include "path.h"
@@ -12,11 +13,11 @@
 
 using namespace std ;
 
-void filter_fastqs(int, string, string, unordered_set<string>) ;
+void filter_fastqs(int, string&, string&, unordered_set<string>&) ;
 
 struct Filter_fastq_set_args {
-	unordered_set<string> fastq_set ;
-	unordered_set<string> * read_ids_to_exclude ;
+	unordered_set<string> fastq_path_set ;
+	unordered_set<string> * read_ids_to_exclude_set ;
 	string output_dir_path ;
 };
 
