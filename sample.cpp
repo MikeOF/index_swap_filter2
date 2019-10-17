@@ -18,7 +18,6 @@ Sample::Sample (const string& sample_def) {
 	sample_name = tokens[1] ;
 	whitelist_path = tokens[2] ;
 	fastq_dir_path = tokens[3] ;
-	star_reference_path = tokens[4] ;
 
 	// check paths
 	if (!Path(whitelist_path).is_file()) {
@@ -29,16 +28,12 @@ Sample::Sample (const string& sample_def) {
 		throw runtime_error ("For Sample Def: " + sample_def 
 		+ "\n\tFastq Dir Path: " + fastq_dir_path + ", is not a directory") ;
 	}
-	if (!Path(star_reference_path).is_dir()) {
-		throw runtime_error ("For Sample Def: " + sample_def 
-		+ "\n\tStar Reference Path: " + star_reference_path + ", is not a directory") ;
-	}
 
 	// barcode and fastq definitions
 
-	string barcode_key = tokens[5] ;
-	barcode_fq_pattern = tokens[6] ;
-	sequence_fq_pattern = tokens[7] ;
+	string barcode_key = tokens[4] ;
+	barcode_fq_pattern = tokens[5] ;
+	sequence_fq_pattern = tokens[6] ;
 
 	// make sure that only C, N, and U are present in the barcode_key
 	int num_N = 0;
@@ -104,7 +99,6 @@ string Sample::to_string() {
 	sample_str +=  "\nSample Name: " + sample_name ;
 	sample_str += "\n\tWhitelist Path: " + whitelist_path ;
 	sample_str += "\n\tFastq Dir Path: " + fastq_dir_path ;
-	sample_str += "\n\tStar Reference Path: " + star_reference_path ;
 	sample_str += "\n\tCell Barcode Start: " + ::to_string(cell_bc_start)  ;
 	sample_str += "\tCell Barcode Len: " + ::to_string(cell_bc_len) ;
 	sample_str += "\n\tUMI Start: " + ::to_string(umi_start) ;

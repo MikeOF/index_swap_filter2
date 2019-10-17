@@ -2,7 +2,7 @@
 
 using namespace std ;
 
-Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& samples) {
+Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<string, Sample>& samples) {
 
 	this->base_dir_path = base_dir_path ;
 
@@ -21,81 +21,72 @@ Workdir::Workdir (Path base_dir_path, const unordered_map<string, Sample>& sampl
 	this->cug_label_base_dir_path = this->base_dir_path.join("cell_umi_gene_labels") ;
 	this->cug_label_base_dir_path.make_dir() ;
 
+	// parse star reference paths and annotation paths
+	vector<string> tokens ;
+	string token ;
+	istringstream token_stream (star_ref_list) ;
+	while (getline(token_stream, token, ',')) tokens.push_back(token) ;
 
-	unordered_set<string> alignment_dir_path_set ;
+	if (tokens.size() % 2 != 0 || tokens.size() < 2) {
+		throw runtime_error("could not parse star ref list, " + star_ref_list) ;
+	}
+
+	// check and store each reference and its relevant paths
+	int adir_name_cnt = 1 ;
+	for (int i = 0; i < tokens.size(); i += 2) {
+		string star_ref_path = tokens[i] ;
+		string annotation_gtf_path = tokens[i+1] ;
+
+		// checkreference paths
+		if (!Path(star_reference_path).is_dir()) {
+			throw runtime_error("star ref is not an existant dir, " + star_reference_path) ;
+		}
+		if (!Path(annotation_gtf_path).is_file()) {
+			throw runtime_error("star annotation gtf is not an existant file, " + annotation_gtf_path) ;
+		}
+
+		// store the reference an assign alignment and cug paths
+		this->star_reference_paths.insert(star_reference_path) ;
+		this->annotation_gtf_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, annotation_gtf_path)) ;
+
+		// get count tag and star reference "name"
+		string star_reference_name = Path(star_reference_path).get_filename() ;
+
+		// get the alignment dir path for this star reference
+		Path alignment_dir_path = this->cug_label_base_dir_path.join(
+			star_reference_name + "-" + to_string(adir_name_cnt++)) ;
+
+		// make the alignment dir
+		alignment_dir_path.make_dir() ;
+
+		// create cug label path & chunks path
+		Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
+		Path cug_label_chunks_path = alignment_dir_path.join("cug_label_chunks") ;
+
+		// create swaps path
+		Path called_swaps_path = alignment_dir_path.join("called_swaps.txt.gz") ;
+
+		// add reference associated paths to maps
+		this->alignment_dir_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, alignment_dir_path.to_string())) ;
+		this->cug_label_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, cug_label_path.to_string())) ;
+		this->cug_label_chunks_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
+		this->called_swaps_path_by_star_reference_path.insert(
+			make_pair(star_reference_path, called_swaps_path.to_string())) ;
+	}
+
+	// get paths for samples
 	for (auto it = samples.begin(); it != samples.end(); ++it) {
 
 		// parse sample iterator
 		string sample_key = it->first ;
 		const Sample& sample = it->second ;
 
-		// create alignment dir / cug file to star ref mapping if necessary
-		string star_reference_path = sample.get_star_reference_path() ; 
-
-		if (this->alignment_dir_path_by_star_reference_path.find(star_reference_path) 
-			== this->alignment_dir_path_by_star_reference_path.end()) {
-
-			// get count tag and star reference "name"
-			int dir_name_cnt = 1 ;
-			string star_reference_name = Path(star_reference_path).get_filename() ;
-
-			// get the alignment dir path for this star reference
-			Path alignment_dir_path = this->cug_label_base_dir_path.join(
-				star_reference_name + "-" + to_string(dir_name_cnt)) ;
-
-			// make sure the alignment dir path is unique
-			while(alignment_dir_path_set.find(alignment_dir_path.to_string()) != alignment_dir_path_set.end()) {
-
-				alignment_dir_path = this->cug_label_base_dir_path.join(
-					star_reference_name + "-" + to_string(++dir_name_cnt)) ;
-			}
-			alignment_dir_path_set.insert(alignment_dir_path.to_string()) ;
-
-			// make the alignment dir
-			alignment_dir_path.make_dir() ;
-
-			// get annotation gtf path
-			Path annotation_dir_path = Path(star_reference_path).join("annotation") ;
-			if (!annotation_dir_path.is_dir()) {
-				throw runtime_error("too many gtf files found in star reference dir, " + star_reference_path) ;
-			}
-			
-			string annotation_gtf_path ;
-			int gtfs_found = 0 ;
-			for (string path : annotation_dir_path.get_dir_list()) {
-				if (path.substr(path.size()-4) == ".gtf") {
-					annotation_gtf_path = path ;
-					gtfs_found++;
-				}
-			}
-			if (gtfs_found > 1) throw runtime_error(
-				"too many gtf files found in star reference dir, " + star_reference_path) ;
-			if (gtfs_found == 0) throw runtime_error(
-				"could not find a gtf file in star reference dir, " + star_reference_path) ;
-
-
-			// create cug label path & chunks path
-			Path cug_label_path = alignment_dir_path.join("cug_label.txt.gz") ;
-			Path cug_label_chunks_path = alignment_dir_path.join("cug_label_chunks") ;
-
-			// create swaps path
-			Path called_swaps_path = alignment_dir_path.join("called_swaps.txt.gz") ;
-
-			// add reference path & cug label path / alignment dir to map
-			this->alignment_dir_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, alignment_dir_path.to_string())) ;
-			this->cug_label_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, cug_label_path.to_string())) ;
-			this->cug_label_chunks_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
-			this->annotation_gtf_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, annotation_gtf_path)) ;
-			this->called_swaps_path_by_star_reference_path.insert(
-				make_pair(star_reference_path, called_swaps_path.to_string())) ;
-		}
-
 		// store sample_key
-		this->sample_keys.push_back(sample_key) ;
+		this->sample_keys.insert(sample_key) ;
 
 		// create sample work dir
 		Path sample_dir_path = this->base_dir_path.join(sample_key) ;

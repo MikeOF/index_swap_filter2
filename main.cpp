@@ -17,7 +17,34 @@
 
 using namespace std ;
 
-void show_usage(string name) {
+void detect(int argc, char ** argv) ;
+void filter(int argc, char ** argv) ;
+
+void show_main_usage(string name) {
+	cerr << "Usage: " 
+	<< name 
+	<< " <command> <arguments>" << endl << endl  
+	<< "\tcommands" << endl << endl
+	<< "\t\tdetect - detect index swapped reads in a sequencing run" << endl << endl
+	<< "\t\tfilter - filter reads from a set of fastqs" << endl << endl ;
+}
+
+int main(int argc, char ** argv) {
+
+	// call appropriate function or show usage 
+	if (argc < 2) { show_main_usage(argv[0]) ; exit(1) ; }
+
+	if (argv[1] == 'detect') {
+		detect(argc, argv) ;
+	} else if (argv[1] == 'filter') {
+		filter(argc, argv) ;
+	} else {
+		show_main_usage(argv[0]) ; exit(1) ;
+	}
+	return 0 ;
+}
+
+void show_detect_usage(string name) {
     cerr << "Usage: " 
     << name 
     << " threads work_dir_path sample_def sample_def [sample_def ...]" << endl
@@ -28,10 +55,13 @@ void show_usage(string name) {
     << endl ;
 }
 
-int main(int argc, char ** argv) {
+void detect(int argc, char ** argv) {
+
+	// function name
+	string function_name = string(argv[0]) + string(argv[1]) ;
 
 	// parse and validate arguments
-	if (argc < 5) { show_usage(argv[0]) ; exit(1) ; }
+	if (argc < 6) { show_detect_usage(function_name) ; exit(1) ; }
 
 	// ----------------------------
 	//   Threads
@@ -39,17 +69,17 @@ int main(int argc, char ** argv) {
 
 	int threads ;
 	try { 
-		threads = stoi(argv[1]) ; 
+		threads = stoi(argv[2]) ; 
 
 	} catch (const char* msg) { 
-		cerr << "could not parse threads argument to an int, " << argv[1] << endl ;
-		show_usage(argv[0]) ; 
+		cerr << "could not parse threads argument to an int, " << argv[2] << endl ;
+		show_detect_usage(function_name) ; 
 		exit(1) ; 
 	}
 
 	if (threads < 1 || threads > 20) {
 		cerr << "threads argument must be between 0 and 21" << endl ;
-		show_usage(argv[0]) ;
+		show_detect_usage(function_name) ;
 		exit(1) ;
 	}
 
@@ -60,7 +90,7 @@ int main(int argc, char ** argv) {
 	// each sample
 	unordered_map<string, Sample> samples ;
 	try {
-		for (int i = 3; i < argc; i++) { 
+		for (int i = 4; i < argc; i++) { 
 
 			// create the sample
 			Sample sample (argv[i]) ;
@@ -69,7 +99,7 @@ int main(int argc, char ** argv) {
 			if (samples.count(sample.get_key()) > 0) {
 				cerr << "Duplicate Sample Defs for "<< sample.get_project_name() 
 				<< " " << sample.get_sample_name() << endl ;
-				show_usage(argv[0]) ; exit(1) ; 
+				show_detect_usage(function_name) ; exit(1) ; 
 			}
 
 			// add it to the map
@@ -78,7 +108,7 @@ int main(int argc, char ** argv) {
 
 	} catch (exception& e) { 
 		cerr << e.what() << endl ; 
-		show_usage(argv[0]) ; 
+		show_detect_usage(function_name) ; 
 		exit(1) ; 
 	}
 
@@ -93,23 +123,23 @@ int main(int argc, char ** argv) {
 	// --------------------------
 
 	// work dir path
-	Path work_dir_path = Path(argv[2]) ;
+	Path work_dir_path (argv[2]) ;
 
 	if (work_dir_path.exists()) {
 		cerr << "work dir path, " << work_dir_path.to_string() 
 		<< ", already exists, will not overwrite" << endl ;
-		show_usage(argv[0]) ; exit(1) ; 
+		show_detect_usage(function_name) ; exit(1) ; 
 	}
 
 	if (!work_dir_path.get_parent_path().is_dir()) {
 		cerr << "work dir path, " << work_dir_path.to_string() 
 		<< ", does not have a directory for a parent" << endl ;
-		show_usage(argv[0]) ; exit(1) ; 
+		show_detect_usage(function_name) ; exit(1) ; 
 	}
 
 	// create the workdir 
 	work_dir_path.make_dir() ;
-	Workdir workdir = Workdir(work_dir_path, samples) ;
+	Workdir workdir (work_dir_path, argv[3], samples) ;
 
 	// ----------------------------
 	//   Run Tasks
@@ -129,6 +159,4 @@ int main(int argc, char ** argv) {
 
 	// call swaps
 	write_swapped_reads(threads, samples, workdir) ;
-
-	return 0;
 }

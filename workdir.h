@@ -16,10 +16,26 @@ using namespace std ;
 class Workdir {
 
 	Path base_dir_path ;
-	unordered_map<string, Path> sample_dir_by_sample_key ;
 	vector<string> sample_keys ;
 	string suspect_read_fastq_path ;
 	Path cug_label_base_dir_path ;
+
+	// per star ref
+	unordered_set<string> star_reference_paths ;
+
+	unordered_map<string, string> alignment_dir_path_by_star_reference_path ;
+
+	unordered_map<string, string> annotation_gtf_path_by_star_reference_path ;
+
+	unordered_map<string, string> cug_label_path_by_star_reference_path ;
+	unordered_map<string, string> cug_label_chunks_path_by_star_reference_path ;
+
+	unordered_map<string, string> called_swaps_path_by_star_reference_path ;
+
+	// per sample
+	unordered_set<string> sample_keys ;
+
+	unordered_map<string, Path> sample_dir_by_sample_key ;
 
 	unordered_map<string, string> bcsnrid_path_by_sample_key ;
 	unordered_map<string, unordered_map<string, string>> bcsnrid_chunks_path_by_bc_fastq_path_by_sample_key ;
@@ -29,23 +45,17 @@ class Workdir {
 
 	unordered_map<string, string> suspect_read_fastq_path_by_sample_key ;
 
-	unordered_map<string, string> alignment_dir_path_by_star_reference_path ;
-	unordered_map<string, string> annotation_gtf_path_by_star_reference_path ;
-	unordered_map<string, string> cug_label_path_by_star_reference_path ;
-	unordered_map<string, string> cug_label_chunks_path_by_star_reference_path ;
-	unordered_map<string, string> called_swaps_path_by_star_reference_path ;
-
-	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ; 
+	unordered_map<string, string> swapped_in_read_ids_path_by_sample_key ;
 
 	public:
 
-		Workdir (Path, const unordered_map<string, Sample>&) ;
+		Workdir (Path, string, const unordered_map<string, Sample>&) ;
 
-		vector<string> get_sample_keys() { return this->sample_keys ; }
+		unordered_set<string> get_sample_keys() { return this->sample_keys ; }
 
 		string get_suspect_read_fastq_path() { return this->suspect_read_fastq_path ; }
 
-		unordered_set<string> get_star_reference_paths() ;
+		unordered_set<string> get_star_reference_paths() return this->star_reference_paths ; }
 
 		string get_bcsnrid_path(string) ;
 		string get_bcsnrid_chunks_path(string, string) ;
