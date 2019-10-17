@@ -211,6 +211,12 @@ void filter(int argc, char ** argv) {
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
+	if (!output_dir_path.get_parent_path().is_dir()) {
+		cerr << "output directory, " + output_dir_path.to_string() ;
+		cerr << ", does not have an existant parent directory" << endl ;
+		show_filter_usage(function_name) ;
+		exit(1) ;
+	}
 
 	// ----------------------------
 	//   Exclude Read IDs Path
@@ -259,6 +265,6 @@ void filter(int argc, char ** argv) {
 		fastq_path_set.insert(fastq_path_str) ;
 	}
 
-	// now filter fastqs
+	// now filter the fastqs
 	filter_fastqs(threads, output_dir_path.to_string(), read_ids_to_exclude_path_str, fastq_path_set) ;
 }

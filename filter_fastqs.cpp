@@ -56,4 +56,16 @@ void filter_fastqs(int threads, string& output_dir_path,
 	run_tasks(threads, filter_task_stack) ;
 }
 
-int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args>) ;
+int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
+
+	// parse args
+	unordered_set<string>& fastq_path_set = task.args.fastq_path_set ;
+	unordered_set<string>& read_ids_to_exclude_set = *(task.args.read_ids_to_exclude_set_ptr) ;
+	Path output_dir_path (task.args.output_dir_path) ;
+
+	// make the output directory
+	output_dir_path.make_dir() ;
+
+	// get a set of vectors
+
+}
