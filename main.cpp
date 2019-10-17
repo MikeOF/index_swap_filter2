@@ -14,6 +14,7 @@
 #include "write_suspect_fastq.h"
 #include "label_suspects.h"
 #include "call_swapped_reads.h"
+#include "filter_fastqs.h"
 
 using namespace std ;
 
@@ -167,9 +168,97 @@ void detect(int argc, char ** argv) {
 void show_filter_usage(string name) {
 	cerr << "Usage: " 
 	<< name 
-	<< " threads output_dir fastq_path [fastq_path ...] " << endl << endl ;
+	<< " threads output_dir_path read_ids_to_exclude_gz_path fastq_gz_path [fastq_gz_path ...] " 
+	<< endl << endl ;
 }
 
 void filter(int argc, char ** argv) {
 
+	// function name
+	string function_name = string(argv[0]) + string(argv[1]) ;
+
+	// parse and validate arguments
+	if (argc < 6) { show_filter_usage(function_name) ; exit(1) ; }
+
+	// ----------------------------
+	//   Threads
+	// --------------------------
+
+	int threads ;
+	try { 
+		threads = stoi(argv[2]) ; 
+
+	} catch (const char* msg) { 
+		cerr << "could not parse threads argument to an int, " << argv[2] << endl ;
+		show_filter_usage(function_name) ; 
+		exit(1) ; 
+	}
+
+	if (threads < 1 || threads > 20) {
+		cerr << "threads argument must be between 0 and 21" << endl ;
+		show_filter_usage(function_name) ;
+		exit(1) ;
+	}
+
+	// ----------------------------
+	//   Output Dir Path
+	// --------------------------
+
+	Path output_dir_path (argv[3]) ;
+	if (output_dir_path.exists()) {
+		cerr << "output directory, " + output_dir_path.to_string() ;
+		cerr << ", already exists, will not overwrite" << endl ;
+		show_filter_usage(function_name) ;
+		exit(1) ;
+	}
+
+	// ----------------------------
+	//   Exclude Read IDs Path
+	// --------------------------
+
+	Path read_ids_to_exclude_path (argv[4]) ;
+	string read_ids_to_exclude_path_str = read_ids_to_exclude_path.to_string() ;
+	string read_ids_to_exclude_filename =  read_ids_to_exclude_path.get_filename() ;
+
+	if (!read_ids_to_exclude_gz_path.is_file()) {
+		cerr << "read ids to exlude path, " + read_ids_to_exclude_path_str ;
+		cerr << ", is not an existant file" << endl ;
+		show_filter_usage(function_name) ;
+		exit(1) ;
+	}
+	if (read_ids_to_exclude_filename.find(".gz") != read_ids_to_exclude_filename.size() - 3) {
+		cerr << "read ids to exlude path, " + read_ids_to_exclude_path_str ;
+		cerr << ", does not look gzipped" << endl ;
+		show_filter_usage(function_name) ;
+		exit(1) ;
+	}
+
+	// ----------------------------
+	//   Fastqs
+	// --------------------------
+
+	unordered_set<string> fastq_path_set ;
+	for (int i = 5; i < argc; i++) {
+
+		Path fastq_path (argv[i]) ;
+		string fastq_path_str = fastq_path.to_string() ;
+		string fastq_filename = fastq_path.get_filename() ;
+
+		if (!fastq_path.is_file()) {
+			cerr << "fastq path, " + fastq_path_str + ", is not an existant file" << endl ;
+			show_filter_usage(function_name) ;
+			exit(1) ;
+		}
+
+		if (fastq_filename.find(".fastq.gz") != fastq_filename.size() - 9) {
+			cerr << "passed fastq path, " + fastq_path_str + ", does not appear to be a fastq file" << endl ;
+			show_filter_usage(function_name) ;
+			exit(1) ;
+		}
+
+		fastq_path_set.insert(fastq_path_str) ;
+	}
+
+	// now filter fastqs
+	filter_fastqs(threads, output_dir_path.to_string(), read_ids_to_exclude_path_str, fastq_path_set) ;
 }
