@@ -1,6 +1,6 @@
 #include "determine_suspect_barcodes.h"
 
-void write_out_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
+void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Workdir& workdir) {
 
 	// create suspect task
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> write_out_suspect_bcsnrid_lines_task ;
@@ -24,6 +24,7 @@ void write_out_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 	stack<Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args>> write_task_stack ; 
 	write_task_stack.push(write_out_suspect_bcsnrid_lines_task) ;	
 
+	// run task
 	stack<unordered_map<string,vector<string>>> supect_bcsnrid_chunk_paths_by_sample_key_stack  = run_tasks(1, write_task_stack) ;
 	unordered_map<string,vector<string>> supect_bcsnrid_chunk_paths_by_sample_key = supect_bcsnrid_chunk_paths_by_sample_key_stack.top();
 

@@ -99,7 +99,7 @@ void Path::rename(const Path new_path, bool exists_ok) {
 
 	if (new_path_exists) {
 		
-		if (!exists_ok) runtime_error("attempt to overwrite path with specifying exists_ok = true") ;
+		if (!exists_ok) throw runtime_error("attempt to overwrite path with specifying exists_ok = true") ;
 		if (new_path.is_dir()) throw runtime_error("cannot rename to an existant directory") ;
 	}
 

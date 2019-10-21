@@ -66,6 +66,71 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 	// make the output directory
 	output_dir_path.make_dir() ;
 
-	// get a set of vectors
+	// get maps of gzins and gzouts
+	string anchor_fastq_path ;
+	unordered_set<string> other_fastq_path_set ;
+	unordered_map<string, Gzin *> gzin_ptr_by_fastq_path ;
+	unordered_map<string, Gzout *> gzout_ptr_by_fastq_path ;
+	for (string fastq_path : fastq_path_set) {
 
+		// store fastq path conveniently
+		if (anchor_fastq_path.empty()) {
+			anchor_fastq_path = fastq_path ;
+		} else {
+			other_fastq_path_set.insert(fastq_path) ;
+		}
+
+		// make gzin
+		gzin_ptr_by_fastq_path.insert(make_pair(fastq_path, new Gzin(fastq_path))) ;
+
+		// make gzout
+		Path fasq_out_Path = output_dir_path.join(Path(fastq_path).get_filename())
+		gzout_ptr_by_fastq_path.insert(make_pair(fastq_path, new Gzout(fasq_out_Path.to_string()))) ;
+	}
+
+	// print out filtered fastqs
+	while(gzin_ptr_by_fastq_path.at(anchor_fastq_path)->has_next_line()) {
+
+		// read in the anchor fastq's seq
+		string anchor_line = gzin_ptr_by_fastq_path.at(anchor_fastq_path)->read_line() ;
+
+		// get and check read id
+		string read_id = anchor_line.substr(0, anchor_line.find_first_of(" \t")) ;
+
+		if (read_ids_to_exclude_set.count(read_id) == 0) {
+			// then print out the sequence for each fastq
+
+			// print first line of anchor
+			gzout_ptr_by_fastq_path.at(anchor_fastq_path)->write_line(anchor_line) ;
+
+			// print rest of anchor for sequence
+			for (int i = 0; i < 3; i++) {
+				gzout_ptr_by_fastq_path.at(anchor_fastq_path)->write_line(
+					gzin_ptr_by_fastq_path.at(anchor_fastq_path)->read_line()) ;
+			}
+
+			// print a seq from each of the other fastqs
+			for (string other_fastq_path : other_fastq_path_set) {
+				for (int i = 0; i < 4; i++) {
+
+					gzout_ptr_by_fastq_path.at(other_fastq_path)->write_line(
+						gzin_ptr_by_fastq_path.at(other_fastq_path)->read_line()) ;
+				}
+			}
+
+		} else {
+			// read past this sequence for each fastq
+
+			for (int i = 0; i < 3; i++) {
+				gzin_ptr_by_fastq_path.at(anchor_fastq_path)->read_line() ;
+			}
+
+			for (string other_fastq_path : other_fastq_path_set) {
+				for (int i = 0; i < 4; i++) {
+
+					gzin_ptr_by_fastq_path.at(other_fastq_path)->read_line() ;
+				}
+			}
+		}
+	}
 }

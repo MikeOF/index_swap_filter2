@@ -10,6 +10,7 @@
 #include <tuple>
 #include <stdexcept>
 
+#include "log.h"
 #include "sample.h"
 #include "whitelist.h"
 #include "workdir.h"
@@ -24,7 +25,7 @@ string get_barcode_from_bcsnrid_line(const string&) ;
 int get_seqnum_from_bcsnrid_line(const string&) ;
 string get_read_id_from_bcsnrid_line(const string&) ;
 
-void read_in_bcsnrid_lines(int, unordered_map<string, Sample>&, Workdir&) ;
+void write_bcsnrid_lines(int, unordered_map<string, Sample>&, Workdir&) ;
 
 struct Extract_bcsnrid_lines_args {
 	string bcsnrid_chunks_path ;
@@ -36,6 +37,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 
 struct Collect_bcsnrid_lines_args {
 	vector<string> bcsnrid_chunk_paths ;
+	vector<string> bcsnrid_chunk_dir_paths ;
 	string bcsnrid_path ;
 	Sample * sample_ptr ;
 };

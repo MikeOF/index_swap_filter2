@@ -1,9 +1,11 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <stdexcept>
 
+#include "log.h"
 #include "path.h"
 #include "sample.h"
 #include "workdir.h"
@@ -22,12 +24,14 @@ void detect(int argc, char ** argv) ;
 void filter(int argc, char ** argv) ;
 
 void show_main_usage(string name) {
-	cerr << "Usage: " 
+	stringstream ss ;
+	ss << "Usage: " 
 	<< name 
 	<< " <command> <arguments>" << endl << endl  
 	<< "\tcommands" << endl << endl
 	<< "\t\tdetect - detect index swapped reads in a sequencing run" << endl << endl
 	<< "\t\tfilter - filter reads from a set of fastqs" << endl << endl ;
+	log_error_message(ss.str()) ;
 }
 
 int main(int argc, char ** argv) {
@@ -46,7 +50,8 @@ int main(int argc, char ** argv) {
 }
 
 void show_detect_usage(string name) {
-    cerr << "Usage: " 
+	stringstream ss ;
+	ss << "Usage: " 
     << name 
     << " threads work_dir_path star_reference_list sample_def sample_def [sample_def ...]"
     << endl << endl
@@ -57,6 +62,7 @@ void show_detect_usage(string name) {
     << "\t\tbarcode_key: [N ...]C[C ...][N ...]U[U ...][N ...] "
     <<"or [N ...]U[U ...][N ...]C[C ...][N ...]"
     << endl ;
+	log_error_message(ss.str()) ;
 }
 
 void detect(int argc, char ** argv) {
@@ -64,8 +70,14 @@ void detect(int argc, char ** argv) {
 	// function name
 	string function_name = string(argv[0]) + string(argv[1]) ;
 
-	// parse and validate arguments
+	// parse arguments
 	if (argc < 6) { show_detect_usage(function_name) ; exit(1) ; }
+
+	string threads_arg = argv[2] ;
+	string star_reference_list_arg = argv[3] ;
+
+	vector<string> sample_def_vect_arg ;
+	for (int i = 4; i < argc; i++) { sample_def_vect_arg.push_back(argv[i]) ; }
 
 	// ----------------------------
 	//   Threads
@@ -73,16 +85,18 @@ void detect(int argc, char ** argv) {
 
 	int threads ;
 	try { 
-		threads = stoi(argv[2]) ; 
+		threads = stoi(threads_arg) ; 
 
 	} catch (const char* msg) { 
-		cerr << "could not parse threads argument to an int, " << argv[2] << endl ;
+		stringstream ss << "could not parse threads argument to an int, " << threads_arg << endl ;
+		log_error_message(ss.str()) ; 
 		show_detect_usage(function_name) ; 
 		exit(1) ; 
 	}
 
 	if (threads < 1 || threads > 20) {
-		cerr << "threads argument must be between 0 and 21" << endl ;
+		stringstream ss << "threads argument must be between 0 and 21" << endl ;
+		log_error_message(ss.str()) ; 
 		show_detect_usage(function_name) ;
 		exit(1) ;
 	}
@@ -94,15 +108,16 @@ void detect(int argc, char ** argv) {
 	// each sample
 	unordered_map<string, Sample> samples ;
 	try {
-		for (int i = 4; i < argc; i++) { 
+		for (string sample_def : sample_def_vect_arg) { 
 
 			// create the sample
-			Sample sample (argv[i]) ;
+			Sample sample (sample_def) ;
 
 			// make sure there are no duplicate samples
 			if (samples.count(sample.get_key()) > 0) {
-				cerr << "Duplicate Sample Defs for "<< sample.get_project_name() 
+				stringstream ss << "Duplicate Sample Defs for "<< sample.get_project_name() 
 				<< " " << sample.get_sample_name() << endl ;
+				log_error_message(ss.str()) ; 
 				show_detect_usage(function_name) ; exit(1) ; 
 			}
 
@@ -111,15 +126,19 @@ void detect(int argc, char ** argv) {
 		}
 
 	} catch (exception& e) { 
-		cerr << e.what() << endl ; 
+		stringstream ss << e.what() << endl ; 
+		log_error_message(ss.str()) ;
 		show_detect_usage(function_name) ; 
 		exit(1) ; 
 	}
 
 	// print off samples
-	cout << endl << "Samples\n-------" << endl << endl ;
+	stringstream ss << endl << "Samples\n-------" << endl << endl ;
+	log_message(ss.str()) ;
 	for (auto it = samples.begin(); it != samples.end(); ++it) {
-		cout << it->second.to_string() << endl << endl ;
+		ss.str("") ;
+		ss << it->second.to_string() << endl << endl ;
+		log_message(ss.str()) ;
 	}
 
 	// ----------------------------
@@ -130,30 +149,32 @@ void detect(int argc, char ** argv) {
 	Path work_dir_path (argv[2]) ;
 
 	if (work_dir_path.exists()) {
-		cerr << "work dir path, " << work_dir_path.to_string() 
+		stringstream ss << "work dir path, " << work_dir_path.to_string() 
 		<< ", already exists, will not overwrite" << endl ;
+		log_error_message(ss.str()) ; 
 		show_detect_usage(function_name) ; exit(1) ; 
 	}
 
 	if (!work_dir_path.get_parent_path().is_dir()) {
-		cerr << "work dir path, " << work_dir_path.to_string() 
+		stringstream ss << "work dir path, " << work_dir_path.to_string() 
 		<< ", does not have a directory for a parent" << endl ;
+		log_error_message(ss.str()) ; 
 		show_detect_usage(function_name) ; exit(1) ; 
 	}
 
 	// create the workdir 
 	work_dir_path.make_dir() ;
-	Workdir workdir (work_dir_path, argv[3], samples) ;
+	Workdir workdir (work_dir_path, star_reference_list_arg, samples) ;
 
 	// ----------------------------
 	//   Run Tasks
 	// --------------------------
 
 	// read in barcode seq-num read ids into the workdir
-	read_in_bcsnrid_lines(threads, samples, workdir) ;
+	write_bcsnrid_lines(threads, samples, workdir) ;
 
 	// write out the suspect read ids
-	write_out_suspect_bcsnrid_lines(threads, samples, workdir) ;
+	determine_suspect_bcsnrid_lines(threads, samples, workdir) ;
 
 	// write out suspect read fastqs
 	write_suspect_read_fastqs(threads, samples, workdir) ;
@@ -166,10 +187,10 @@ void detect(int argc, char ** argv) {
 }
 
 void show_filter_usage(string name) {
-	cerr << "Usage: " 
-	<< name 
+	stringstream ss << "Usage: " << name 
 	<< " threads output_dir_path read_ids_to_exclude_gz_path fastq_gz_path [fastq_gz_path ...] " 
 	<< endl << endl ;
+	log_error_message(ss.str()) ;
 }
 
 void filter(int argc, char ** argv) {
@@ -189,13 +210,15 @@ void filter(int argc, char ** argv) {
 		threads = stoi(argv[2]) ; 
 
 	} catch (const char* msg) { 
-		cerr << "could not parse threads argument to an int, " << argv[2] << endl ;
+		stringstream ss << "could not parse threads argument to an int, " << argv[2] << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ; 
 		exit(1) ; 
 	}
 
 	if (threads < 1 || threads > 20) {
-		cerr << "threads argument must be between 0 and 21" << endl ;
+		stringstream ss << "threads argument must be between 0 and 21" << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
@@ -206,14 +229,16 @@ void filter(int argc, char ** argv) {
 
 	Path output_dir_path (argv[3]) ;
 	if (output_dir_path.exists()) {
-		cerr << "output directory, " + output_dir_path.to_string() ;
-		cerr << ", already exists, will not overwrite" << endl ;
+		stringstream ss << "output directory, " << output_dir_path.to_string() ;
+		ss << ", already exists, will not overwrite" << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
 	if (!output_dir_path.get_parent_path().is_dir()) {
-		cerr << "output directory, " + output_dir_path.to_string() ;
-		cerr << ", does not have an existant parent directory" << endl ;
+		stringstream ss << "output directory, " << output_dir_path.to_string() ;
+		ss << ", does not have an existant parent directory" << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
@@ -227,14 +252,16 @@ void filter(int argc, char ** argv) {
 	string read_ids_to_exclude_filename =  read_ids_to_exclude_path.get_filename() ;
 
 	if (!read_ids_to_exclude_gz_path.is_file()) {
-		cerr << "read ids to exlude path, " + read_ids_to_exclude_path_str ;
-		cerr << ", is not an existant file" << endl ;
+		stringstream ss << "read ids to exlude path, " << read_ids_to_exclude_path_str ;
+		ss << ", is not an existant file" << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
 	if (read_ids_to_exclude_filename.find(".gz") != read_ids_to_exclude_filename.size() - 3) {
-		cerr << "read ids to exlude path, " + read_ids_to_exclude_path_str ;
-		cerr << ", does not look gzipped" << endl ;
+		stringstream ss << "read ids to exlude path, " << read_ids_to_exclude_path_str ;
+		ss << ", does not look gzipped" << endl ;
+		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
 	}
@@ -251,13 +278,17 @@ void filter(int argc, char ** argv) {
 		string fastq_filename = fastq_path.get_filename() ;
 
 		if (!fastq_path.is_file()) {
-			cerr << "fastq path, " + fastq_path_str + ", is not an existant file" << endl ;
+			stringstream ss << "fastq path, " << fastq_path_str ;
+			ss << ", is not an existant file" << endl ;
+			log_error_message(ss.str()) ;
 			show_filter_usage(function_name) ;
 			exit(1) ;
 		}
 
 		if (fastq_filename.find(".fastq.gz") != fastq_filename.size() - 9) {
-			cerr << "passed fastq path, " + fastq_path_str + ", does not appear to be a fastq file" << endl ;
+			stringstream ss << "passed fastq path, " << fastq_path_str ; 
+			ss << ", does not appear to be a fastq file" << endl ;
+			log_error_message(ss.str()) ;
 			show_filter_usage(function_name) ;
 			exit(1) ;
 		}

@@ -15,7 +15,7 @@
 
 using namespace std ;
 
-void write_out_suspect_bcsnrid_lines(int, unordered_map<string, Sample>&, Workdir&) ;
+void determine_suspect_bcsnrid_lines(int, unordered_map<string, Sample>&, Workdir&) ;
 
 struct Write_out_suspect_bcsnrid_lines_args {
 	unordered_map<string, string> suspect_bcsnrid_chunks_path_by_sample_key ;

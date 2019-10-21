@@ -12,8 +12,8 @@ Whitelist::Whitelist (string whitelist_path) {
 		  while (getline(wl_file, line)) {
 
 		  	if (whitelist_set.count(line) > 0) { 
-		  		cout << "collision on " << line << endl ; 
-		  		wl_file.close() ; return ; 
+		  		wl_file.close() ; 
+                throw runtime_error("whitelist collision on " + line) ;
 		  	}
 
 		  	whitelist_set.insert(line) ;
@@ -22,7 +22,7 @@ Whitelist::Whitelist (string whitelist_path) {
 		wl_file.close() ;
 	}
 
-	else  throw runtime_error("unable to open file: " + whitelist_path) ;
+	else throw runtime_error("unable to open file: " + whitelist_path) ;
 }
 
 string Whitelist::get_valid_barcode(const string& in_query) {
