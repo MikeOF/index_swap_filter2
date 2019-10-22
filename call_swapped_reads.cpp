@@ -42,12 +42,16 @@ void write_swapped_reads(int threads, unordered_map<string, Sample>& samples, Wo
 
 int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// parse args
 	string cug_label_path = task.args.cug_label_path ;
 	string called_swaps_path = task.args.called_swaps_path ;
 
 	// log activity
-	stringstream ss << GLOBAL_LOG_HEADER << "calling swapped in read ids from " ;
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "calling swapped in read ids from " ;
 	ss << Path(cug_label_path).to_relative_path_string() << endl ;
 	log_message(ss.str()) ;
 
@@ -130,6 +134,9 @@ int call_swapped_reads_task_func(Task<int, Call_swapped_reads_args> task) {
 
 int collect_swapped_reads_task_func(Task<int, Collect_swapped_reads_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// parse args
 	vector<string> called_swaps_paths = task.args.called_swaps_paths ;
 	string swapped_in_read_ids_path = task.args.swapped_in_read_ids_path ;
@@ -141,7 +148,8 @@ int collect_swapped_reads_task_func(Task<int, Collect_swapped_reads_args> task) 
 		swapped_in_read_ids_path).to_relative_path_string() ;
 
 	// log beginning
-	stringstream ss << log_header << "collecting swapped in read ids into " ;
+	ss.str("") ;
+	ss << log_header << "collecting swapped in read ids into " ;
 	ss << swapped_in_read_ids_relative_path_string << endl ;
 	log_message(ss.str()) ;
 

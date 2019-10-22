@@ -15,7 +15,7 @@
 
 using namespace std ;
 
-void filter_fastqs(int, string&, string&, unordered_set<string>&) ;
+void filter_fastqs(int, const string&, const string&, const unordered_set<string>&) ;
 
 struct Filter_fastq_set_args {
 	unordered_set<string> fastq_path_set ;

@@ -2,11 +2,15 @@
 
 using namespace std ;
 
-void filter_fastqs(int threads, string& output_dir_path, 
-	string& read_ids_to_exclude_path, unordered_set<string>& fastq_path_set) {
+void filter_fastqs(int threads, const string& output_dir_path, 
+	const string& read_ids_to_exclude_path, const unordered_set<string>& fastq_path_set) {
+
+	// log stream
+	stringstream ss ;
 
 	// log spacing
-	stringstream ss << endl << "Filtration Beginning" << endl ;
+	ss.str("") ;
+	ss << endl << "Filtration Beginning" << endl ;
 	log_message(ss.str()) ;
 
 	// get groups of corresponding fastqs
@@ -38,7 +42,7 @@ void filter_fastqs(int threads, string& output_dir_path,
 		int first = read_id.find_first_not_of(" \t") ;
 		if (first == string::npos) throw runtime_error("a blank read id was found the the to-exclude set") ;
 
-		int last = read_id.find_last_not_of(" \t")
+		int last = read_id.find_last_not_of(" \t") ;
 
 		read_id = read_id.substr(first, last - first + 1) ;
 
@@ -67,17 +71,21 @@ void filter_fastqs(int threads, string& output_dir_path,
 
 int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// parse args
 	unordered_set<string>& fastq_path_set = task.args.fastq_path_set ;
 	unordered_set<string>& read_ids_to_exclude_set = *(task.args.read_ids_to_exclude_set_ptr) ;
 	Path output_dir_path (task.args.output_dir_path) ;
 
 	// log group beginning
-	stringstream ss << endl << "Fastq Group:" << endl ;
-	for (string& fastq_path : fastq_path_set) {
+	ss.str("") ;
+	ss << endl << "Fastq Group:" << endl ;
+	for (const string& fastq_path : fastq_path_set) {
 		ss << "\t" << fastq_path << endl ;
 	} 
-	ss << "\t" << "beginning" << end ;
+	ss << "\t" << "beginning" << endl ;
 	log_message(ss.str()) ;
 
 	// make the output directory
@@ -103,7 +111,7 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 		gzin_ptr_by_fastq_path.insert(make_pair(fastq_path, new Gzin(fastq_path))) ;
 
 		// make gzout
-		Path fasq_out_Path = output_dir_path.join(Path(fastq_path).get_filename())
+		Path fasq_out_Path = output_dir_path.join(Path(fastq_path).get_filename()) ;
 		gzout_ptr_by_fastq_path.insert(make_pair(fastq_path, new Gzout(fasq_out_Path.to_string()))) ;
 	}
 
@@ -158,10 +166,12 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 	// log ending
 	ss.str("") ;
 	ss << endl << "Fastq Group:" << endl ;
-	for (string& fastq_path : fastq_path_set) {
+	for (const string& fastq_path : fastq_path_set) {
 		ss << "\t" << fastq_path << endl ;
 	}
-	ss << "\t" << to_string(write_cnt) << " sequences written" << end ;
-	ss << "\t" << to_string(filtered_cnt) << " sequences filtered" << end ;
+	ss << "\t" << to_string(write_cnt) << " sequences written" << endl ;
+	ss << "\t" << to_string(filtered_cnt) << " sequences filtered" << endl ;
 	log_message(ss.str()) ;
+
+	return 0 ;
 }

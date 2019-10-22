@@ -50,8 +50,12 @@ void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// log activity
-	stringstream ss << GLOBAL_LOG_HEADER << "writing out suspect barcode seqnum read id lines" << endl ;
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "writing out suspect barcode seqnum read id lines" << endl ;
 	log_message(ss.str()) ;
 
 	// get argument references
@@ -208,6 +212,9 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 
 int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_lines_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// get argument references
 	vector<string>& suspect_bcsnrid_chunk_paths = task.args.suspect_bcsnrid_chunk_paths ;
 	string& suspect_bcsnrid_chunks_path = task.args.suspect_bcsnrid_chunks_path ;
@@ -216,7 +223,8 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 
 	// log activity
 	string log_header = get_sample_log_header(sample) ;
-	stringstream ss << log_header << "collecting suspect barcode seqnum read id lines" << endl ;
+	ss.str("") ;
+	ss << log_header << "collecting suspect barcode seqnum read id lines" << endl ;
 	log_message(ss.str()) ;
 
 	int lines_written = collect_sorted_chunks<int>(suspect_bcsnrid_path, suspect_bcsnrid_chunk_paths, 

@@ -87,10 +87,11 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     result = system(ss_samtools_cmd.str().c_str()) ;
 
     // cleanup star alignment
-    for (string file_path : alignment_dir_path.get_dir_list()) {
-    	if (Path(file_path).to_string() != sam_path.to_string()) {
-    		if (file_path.is_file()) { file_path.remove_file() ; }
-    		else if (file_path.is_dir()) { file_path.remove_dir_recursively() ; }
+    for (string file_path : alignment_dir_Path.get_dir_list()) {
+    	Path file_Path (file_path) ;
+    	if (file_Path.to_string() != sam_path.to_string()) {
+    		if (file_Path.is_file()) { file_Path.remove_file() ; }
+    		else if (file_Path.is_dir()) { file_Path.remove_dir_recursively() ; }
     	}
     }
 
@@ -109,6 +110,9 @@ string get_cug_key(string line) {
 
 int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> task) {
 
+	// log stream
+	stringstream ss ;
+
 	// Parse arguments
 	string& sam_path = task.args.sam_path ;
 	string& cug_label_chunks_path = task.args.cug_label_chunks_path ;
@@ -121,8 +125,8 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 	ifstream gtf_file (annotation_gtf_path) ;
 
 	// log activity
-	stringstream ss ;
-	ss << GLOBAL_LOG_HEADER << "parsing CUG labels from " 
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "parsing CUG labels from " ;
 	ss << Path(sam_path).to_relative_path_string() << endl ;
 	log_message(ss.str()) ;
 
@@ -145,12 +149,12 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 				// map the transcript to the gene id
 				if (gene_id_by_transcript_id.find(transcript_id) != gene_id_by_transcript_id.end()) {
 					if (gene_id != gene_id_by_transcript_id.at(transcript_id)) {
-						stringstream ss ;
-						ss << "different gene ids for transcript id: " + transcript_id ;
-						ss << " annotation gtf path: " + annotation_gtf_path ;
-						ss << " gene_ids: " + gene_id + " " ;
-						ss << gene_id_by_transcript_id.at(transcript_id) ;
-						throw runtime_error(ss.str()) ; 
+						stringstream ess ;
+						ess << "different gene ids for transcript id: " + transcript_id ;
+						ess << " annotation gtf path: " + annotation_gtf_path ;
+						ess << " gene_ids: " + gene_id + " " ;
+						ess << gene_id_by_transcript_id.at(transcript_id) ;
+						throw runtime_error(ess.str()) ; 
 					}
 				} else {
 					gene_id_by_transcript_id.insert(make_pair(transcript_id, gene_id)) ;
@@ -221,7 +225,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 	
 	// log activity
 	ss.str("") ;
-	ss << GLOBAL_LOG_HEADER << "collecting CUG label chunks into " 
+	ss << GLOBAL_LOG_HEADER << "collecting CUG label chunks into " ;
 	ss << Path(cug_label_path).to_relative_path_string() << endl ;
 	log_message(ss.str()) ;
 

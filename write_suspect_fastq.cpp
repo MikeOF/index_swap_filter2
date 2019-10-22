@@ -44,6 +44,9 @@ void write_suspect_read_fastqs(int threads, unordered_map<string, Sample>& sampl
 
 int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args> task) {
 
+	// logging stream
+	stringstream ss ;
+
 	// parse
 	string& suspect_bcsnrid_path = task.args.suspect_bcsnrid_path ;
 	string& suspect_read_fastq_path = task.args.suspect_read_fastq_path ;
@@ -55,7 +58,8 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
     string suspect_read_fastq_relative_path_string = Path(suspect_read_fastq_path).to_relative_path_string() ;
 
     // log beginning
-    stringstream ss << log_header << "writing suspect read fastqs to " ;
+    ss.str("") ;
+    ss << log_header << "writing suspect read fastqs to " ;
     ss << suspect_read_fastq_relative_path_string << endl ;
     log_message(ss.str()) ;
 
@@ -160,12 +164,16 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 
 int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_args> task) {
 
+	// logging stream
+	stringstream ss ;
+
 	// parse
 	vector<string>& suspect_read_fastq_paths = task.args.suspect_read_fastq_paths ; 
 	string& global_suspect_read_fastq_path = task.args.global_suspect_read_fastq_path ;
 
 	// log activity
-	stringstream ss << GLOBAL_LOG_HEADER << "collecting suspect read fastqs into " ;
+	ss.str("") ; 
+	ss << GLOBAL_LOG_HEADER << "collecting suspect read fastqs into " ;
 	ss << Path(global_suspect_read_fastq_path).to_relative_path_string() << endl ;
 	log_message(ss.str()) ;
 

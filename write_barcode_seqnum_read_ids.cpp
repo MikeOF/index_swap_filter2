@@ -87,6 +87,9 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
 
 tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string, vector<string>>, Extract_bcsnrid_lines_args> task) {
 
+    // logging stream
+    stringstream ss ;
+
     // parse arguments
 	string bcsnrid_chunks_path = task.args.bcsnrid_chunks_path ;
 	string bc_fastq_path = task.args.bc_fastq_path ;
@@ -100,7 +103,8 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
     string bc_fastq_relative_path_string = Path(bc_fastq_path).to_relative_path_string() ;
 
     // log beginning
-	stringstream ss << log_header << "reading barcode seqnum read id lines from " ;
+    ss.str("") ;
+    ss << log_header << "reading barcode seqnum read id lines from " ;
     ss << bc_fastq_relative_path_string << endl ;
     log_message(ss.str()) ;
 
@@ -160,11 +164,15 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 
 int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) {
 
+    // logging stream
+    stringstream ss ;
+
     Sample& sample = *(task.args.sample_ptr) ;
 
     // log activity
     string log_header = get_sample_log_header(sample) ;
-    stringstream ss << log_header << "collecting sorted barcode seqnum read id lines" << endl ;
+    ss.str("") ;
+    ss << log_header << "collecting sorted barcode seqnum read id lines" << endl ;
     log_message(ss.str()) ;
 
     // collect chunks
