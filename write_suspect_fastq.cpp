@@ -50,12 +50,14 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 	Sample& sample = *(task.args.sample_ptr) ;
 	string sample_key = sample.get_key() ;
 
-	// log activity
+	// log strings
     string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
     string suspect_read_fastq_relative_path_string = Path(suspect_read_fastq_path).to_relative_path_string() ;
-	string msg = log_header + "writing suspect read fastqs to " ;
-    msg += suspect_read_fastq_relative_path_string + "\n" ;
-    cout << msg ;
+
+    // log beginning
+    stringstream ss << log_header << "writing suspect read fastqs to " ;
+    ss << suspect_read_fastq_relative_path_string << endl ;
+    log_message(ss.str()) ;
 
 	// get fastq data structures
 	unordered_set<string> fastq_name_set ;
@@ -147,10 +149,11 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 		delete it->second ;
 	}
 
-	// log activity
-	msg = log_header + to_string(write_cnt) + " suspect reads written to " ;
-    msg += suspect_read_fastq_relative_path_string + "\n" ;
-    cout << msg ;
+	// log ending
+	ss.str("") ;
+	ss << log_header << to_string(write_cnt) << " suspect reads written to " ;
+    ss << suspect_read_fastq_relative_path_string << endl ;
+    log_message(ss.str()) ;
 
 	return 0 ;
 }
@@ -162,11 +165,16 @@ int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_
 	string& global_suspect_read_fastq_path = task.args.global_suspect_read_fastq_path ;
 
 	// log activity
-	string msg = "GLOBAL : collecting suspect read fastqs into " ;
-	msg += Path(global_suspect_read_fastq_path).to_relative_path_string() + "\n" ;
-	cout << msg ;
+	stringstream ss << GLOBAL_LOG_HEADER << "collecting suspect read fastqs into " ;
+	ss << Path(global_suspect_read_fastq_path).to_relative_path_string() << endl ;
+	log_message(ss.str()) ;
 
 	combine_gz_files(global_suspect_read_fastq_path, suspect_read_fastq_paths) ;
+
+	// remove sample specific suspect read fastqs
+	for (string sample_suspect_read_fastq_path : suspect_read_fastq_paths) {
+		Path(sample_suspect_read_fastq_path).remove_file() ;
+	}
 
 	return 0 ;
 }

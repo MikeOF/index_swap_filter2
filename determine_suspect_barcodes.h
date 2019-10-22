@@ -7,7 +7,9 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <sstream>
 
+#include "log.h"
 #include "gzfile.h"
 #include "task_pool.h"
 #include "gzchunksort.h"
@@ -28,7 +30,7 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 
 struct Collect_suspect_bcsnrid_lines_args {
 	vector<string> suspect_bcsnrid_chunk_paths ;
-	string task.args.suspect_bcsnrid_chunks_path ;
+	string suspect_bcsnrid_chunks_path ;
 	string suspect_bcsnrid_path ;
 	Sample* sample_ptr ;
 } ;

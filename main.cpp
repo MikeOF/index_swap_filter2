@@ -170,20 +170,27 @@ void detect(int argc, char ** argv) {
 	//   Run Tasks
 	// --------------------------
 
-	// read in barcode seq-num read ids into the workdir
-	write_bcsnrid_lines(threads, samples, workdir) ;
+	try {
+		// read in barcode seq-num read ids into the workdir
+		write_bcsnrid_lines(threads, samples, workdir) ;
 
-	// write out the suspect read ids
-	determine_suspect_bcsnrid_lines(threads, samples, workdir) ;
+		// write out the suspect read ids
+		determine_suspect_bcsnrid_lines(threads, samples, workdir) ;
 
-	// write out suspect read fastqs
-	write_suspect_read_fastqs(threads, samples, workdir) ;
+		// write out suspect read fastqs
+		write_suspect_read_fastqs(threads, samples, workdir) ;
 
-	// write out suspect labels
-	label_suspect_reads(threads, samples, workdir) ;
+		// write out suspect labels
+		label_suspect_reads(threads, samples, workdir) ;
 
-	// call swaps
-	write_swapped_reads(threads, samples, workdir) ;
+		// call swaps
+		write_swapped_reads(threads, samples, workdir) ;
+
+	} catch (exception& e) { 
+		stringstream ss << e.what() << endl ; 
+		log_error_message(ss.str()) ;
+		exit(1) ; 
+	}
 }
 
 void show_filter_usage(string name) {

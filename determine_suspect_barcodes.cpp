@@ -51,7 +51,8 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> task) {
 
 	// log activity
-	cout << "GLOBAL : writing out suspect barcode seqnum read id lines\n" ;
+	stringstream ss << GLOBAL_LOG_HEADER << "writing out suspect barcode seqnum read id lines" << endl ;
+	log_message(ss.str()) ;
 
 	// get argument references
 	unordered_map<string, string>& suspect_bcsnrid_chunks_path_by_sample_key = task.args.suspect_bcsnrid_chunks_path_by_sample_key ;

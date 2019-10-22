@@ -27,6 +27,9 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		sam_path_by_star_reference_path.insert(make_pair(star_reference_path, sam_path)) ;
 	}
 
+	// remove the suspect read fastq
+	Path(workdir.get_suspect_read_fastq_path()).remove_file() ;
+
 	// create cug parsing tasks
 	stack<Task<int, Parse_sorted_cug_labels_args>> parse_task_stack ;
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
@@ -83,6 +86,14 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     // call samtools
     result = system(ss_samtools_cmd.str().c_str()) ;
 
+    // cleanup star alignment
+    for (string file_path : alignment_dir_path.get_dir_list()) {
+    	if (Path(file_path).to_string() != sam_path.to_string()) {
+    		if (file_path.is_file()) { file_path.remove_file() ; }
+    		else if (file_path.is_dir()) { file_path.remove_dir_recursively() ; }
+    	}
+    }
+
 	return sam_path.to_string() ;
 }
 
@@ -108,6 +119,12 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 	unordered_map<string, string> gene_id_by_transcript_id ;
 	string line ;
 	ifstream gtf_file (annotation_gtf_path) ;
+
+	// log activity
+	stringstream ss ;
+	ss << GLOBAL_LOG_HEADER << "parsing CUG labels from " 
+	ss << Path(sam_path).to_relative_path_string() << endl ;
+	log_message(ss.str()) ;
 
 	if (gtf_file.is_open()) {
 
@@ -200,7 +217,18 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
+	// collect cug labels
+
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "collecting CUG label chunks into " 
+	ss << Path(cug_label_path).to_relative_path_string() << endl ;
+	log_message(ss.str()) ;
+
 	collect_sorted_chunks<string>(cug_label_path, cug_chunk_files, get_cug_key) ;
+
+	// remove cug label chunks and sam file
+	Path(cug_label_chunks_path).remove_dir_recursively() ;
+	Path(sam_path).remove_file() ;
 
 	return 0 ;
 }

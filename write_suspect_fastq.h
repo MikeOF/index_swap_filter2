@@ -5,6 +5,7 @@
 #include <stack>
 #include <sstream>
 
+#include "log.h"
 #include "gzfile.h"
 #include "task_pool.h"
 #include "gzchunksort.h"

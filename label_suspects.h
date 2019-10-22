@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 
+#include "log.h"
 #include "sample.h"
 #include "workdir.h"
 #include "task_pool.h"
