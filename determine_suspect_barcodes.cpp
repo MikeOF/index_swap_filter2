@@ -25,8 +25,10 @@ void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 	write_task_stack.push(write_out_suspect_bcsnrid_lines_task) ;	
 
 	// run task
-	stack<unordered_map<string,vector<string>>> supect_bcsnrid_chunk_paths_by_sample_key_stack  = run_tasks(1, write_task_stack) ;
-	unordered_map<string,vector<string>> supect_bcsnrid_chunk_paths_by_sample_key = supect_bcsnrid_chunk_paths_by_sample_key_stack.top();
+	stack<unordered_map<string,vector<string>>> supect_bcsnrid_chunk_paths_by_sample_key_stack  
+		= run_tasks(1, write_task_stack) ;
+	unordered_map<string,vector<string>> supect_bcsnrid_chunk_paths_by_sample_key 
+		= supect_bcsnrid_chunk_paths_by_sample_key_stack.top();
 
 	// create suspect collection task stack
 	stack<Task<int, Collect_suspect_bcsnrid_lines_args>> collection_task_stack ;
@@ -36,7 +38,8 @@ void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 		Task<int, Collect_suspect_bcsnrid_lines_args> task ;
 		task.func = collect_suspect_bcsnrid_lines_task_func ;
 		task.args.suspect_bcsnrid_chunk_paths = it->second ;
-		task.args.suspect_bcsnrid_path = workdir.get_suspect_bcsnrid_path(it->first);
+		task.args.suspect_bcsnrid_chunks_path = workdir.get_suspect_bcsnrid_chunks_path(it->first) ;
+		task.args.suspect_bcsnrid_path = workdir.get_suspect_bcsnrid_path(it->first) ;
 		task.args.sample_ptr = &(samples.at(it->first));
 
 		collection_task_stack.push(task) ;
@@ -204,6 +207,7 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 
 	// get argument references
 	vector<string>& suspect_bcsnrid_chunk_paths = task.args.suspect_bcsnrid_chunk_paths ;
+	string& suspect_bcsnrid_chunks_path = task.args.suspect_bcsnrid_chunks_path ;
 	string& suspect_bcsnrid_path = task.args.suspect_bcsnrid_path ;
 	Sample* sample_ptr = task.args.sample_ptr ;
 
@@ -212,6 +216,9 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 	cout << log_header + "collecting suspect barcode seqnum read id lines\n" ;
 
 	int lines_written = collect_sorted_chunks<int>(suspect_bcsnrid_path, suspect_bcsnrid_chunk_paths, get_seqnum_from_bcsnrid_line) ;
+
+	// remove chunks
+	Path(suspect_bcsnrid_chunks_path).remove_dir_recursively() ;
 
 	// log result
 	string msg = log_header ;
