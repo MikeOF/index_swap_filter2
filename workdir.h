@@ -16,7 +16,7 @@ using namespace std ;
 class Workdir {
 
 	Path base_dir_path ;
-	vector<string> sample_keys ;
+	unordered_set<string> sample_keys ;
 	string suspect_read_fastq_path ;
 	Path cug_label_base_dir_path ;
 
@@ -35,7 +35,6 @@ class Workdir {
 	unordered_map<string, string> called_swaps_path_by_star_reference_path ;
 
 	// per sample
-	unordered_set<string> sample_keys ;
 
 	unordered_map<string, Path> sample_dir_by_sample_key ;
 
@@ -57,7 +56,7 @@ class Workdir {
 
 		string get_suspect_read_fastq_path() { return this->suspect_read_fastq_path ; }
 
-		unordered_set<string> get_star_reference_paths() return this->star_reference_paths ; }
+		unordered_set<string> get_star_reference_paths() { return this->star_reference_paths ; }
 
 		string get_bcsnrid_path(string) ;
 		string get_bcsnrid_chunks_path(string, string) ;

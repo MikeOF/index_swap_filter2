@@ -1,4 +1,4 @@
-#include "gzfiles.h"
+#include "gzfile.h"
 
 using namespace std ;
 

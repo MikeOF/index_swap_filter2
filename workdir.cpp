@@ -38,20 +38,20 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 		string annotation_gtf_path = tokens[i+1] ;
 
 		// checkreference paths
-		if (!Path(star_reference_path).is_dir()) {
-			throw runtime_error("star ref is not an existant dir, " + star_reference_path) ;
+		if (!Path(star_ref_path).is_dir()) {
+			throw runtime_error("star ref is not an existant dir, " + star_ref_path) ;
 		}
 		if (!Path(annotation_gtf_path).is_file()) {
 			throw runtime_error("star annotation gtf is not an existant file, " + annotation_gtf_path) ;
 		}
 
 		// store the reference an assign alignment and cug paths
-		this->star_reference_paths.insert(star_reference_path) ;
+		this->star_reference_paths.insert(star_ref_path) ;
 		this->annotation_gtf_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, annotation_gtf_path)) ;
+			make_pair(star_ref_path, annotation_gtf_path)) ;
 
 		// get count tag and star reference "name"
-		string star_reference_name = Path(star_reference_path).get_filename() ;
+		string star_reference_name = Path(star_ref_path).get_filename() ;
 
 		// get the alignment dir path for this star reference
 		Path alignment_dir_path = this->cug_label_base_dir_path.join(
@@ -72,19 +72,19 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 
 		// add reference associated paths to maps
 		this->alignment_dir_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, alignment_dir_path.to_string())) ;
+			make_pair(star_ref_path, alignment_dir_path.to_string())) ;
 
 		this->sam_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, sam_path.to_string())) ;
+			make_pair(star_ref_path, sam_path.to_string())) ;
 
 		this->cug_label_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, cug_label_path.to_string())) ;
+			make_pair(star_ref_path, cug_label_path.to_string())) ;
 
 		this->cug_label_chunks_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, cug_label_chunks_path.to_string())) ;
+			make_pair(star_ref_path, cug_label_chunks_path.to_string())) ;
 
 		this->called_swaps_path_by_star_reference_path.insert(
-			make_pair(star_reference_path, called_swaps_path.to_string())) ;
+			make_pair(star_ref_path, called_swaps_path.to_string())) ;
 	}
 
 	// get paths for samples
@@ -137,16 +137,6 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 		Path swapped_in_read_ids_path = sample_dir_path.join(sample.get_sample_name() + "_INDEX_SWAP_CONTAMINANT_READ_IDS.txt.gz") ;
 		this->swapped_in_read_ids_path_by_sample_key.insert(make_pair(sample_key, swapped_in_read_ids_path.to_string())) ;
 	}
-}
-
-unordered_set<string> Workdir::get_star_reference_paths() {
-	unordered_set<string> star_ref_path_set ;
-	for (auto it = this->alignment_dir_path_by_star_reference_path.begin(); 
-		it != alignment_dir_path_by_star_reference_path.end(); ++it) {
-
-		star_ref_path_set.insert(it->first) ;
-	}
-	return star_ref_path_set ;
 }
 
 string Workdir::get_bcsnrid_path(string sample_key) {
