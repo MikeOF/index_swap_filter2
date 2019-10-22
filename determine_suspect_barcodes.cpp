@@ -196,9 +196,11 @@ unordered_map<string,vector<string>> write_out_suspect_bcsnrid_lines_task_func(
 
 	// log number of suspect read ids found
 	for (auto it = sample_ptr_by_sample_key.begin(); it != sample_ptr_by_sample_key.end(); ++it) {
-		string msg = it->second->get_project_name() + " - " + it->second->get_sample_name() + " : " ;
-		msg += to_string(line_counter_by_sample_key.at(it->first)) + " suspect barcode seqnum read id lines written \n" ;
-		cout << msg ;
+		ss.str("") ;
+		ss << it->second->get_project_name() << " - " << it->second->get_sample_name() << " : " ;
+		ss << to_string(line_counter_by_sample_key.at(it->first)) ;
+		ss << " suspect barcode seqnum read id lines written" << endl ;
+		log_message(ss.str()) ;
 	}
 
 	return supect_chunk_paths_by_sample_key ;
@@ -214,7 +216,8 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 
 	// log activity
 	string log_header = sample_ptr->get_project_name() + " - " + sample_ptr->get_sample_name() + " : " ;
-	cout << log_header + "collecting suspect barcode seqnum read id lines\n" ;
+	stringstream ss << log_header << "collecting suspect barcode seqnum read id lines" << endl ;
+	log_message(ss.str()) ;
 
 	int lines_written = collect_sorted_chunks<int>(suspect_bcsnrid_path, suspect_bcsnrid_chunk_paths, get_seqnum_from_bcsnrid_line) ;
 
@@ -222,18 +225,18 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 	Path(suspect_bcsnrid_chunks_path).remove_dir_recursively() ;
 
 	// log result
-	string msg = log_header ;
+	ss.str("") ;
 	if (lines_written < 0) {
 
-		msg += "suspect barcode seqnum read id lines copied to " ;
-		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
+		ss << "suspect barcode seqnum read id lines copied to " ;
+		ss << Path(suspect_bcsnrid_path).to_relative_path_string() << endl ;
 	} else {
 
-		msg += to_string(lines_written) ;
-		msg += " suspect barcode seqnum read id lines written to " ;
-		msg += Path(suspect_bcsnrid_path).to_relative_path_string() + "\n" ;
+		ss << to_string(lines_written) ;
+		ss << " suspect barcode seqnum read id lines written to " ;
+		ss << Path(suspect_bcsnrid_path).to_relative_path_string() << endl ;
 	}	
-	cout << msg ;
+	log_message(ss.str()) ;
 
 	return 0 ;
 }
