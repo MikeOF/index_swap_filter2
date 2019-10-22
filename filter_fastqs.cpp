@@ -5,6 +5,10 @@ using namespace std ;
 void filter_fastqs(int threads, string& output_dir_path, 
 	string& read_ids_to_exclude_path, unordered_set<string>& fastq_path_set) {
 
+	// log spacing
+	stringstream ss << "Filtration Beginning" << endl ;
+	log_message(ss.str()) ;
+
 	// get groups of corresponding fastqs
 	unordered_map<string, unordered_set<string>> fastq_path_by_first_read_id ;
 	for (string fastq_path : fastq_path_set) {
@@ -54,6 +58,11 @@ void filter_fastqs(int threads, string& output_dir_path,
 		filter_task_stack.push(task) ;
 	}
 	run_tasks(threads, filter_task_stack) ;
+
+	// log ending
+	ss.str("") ;
+	ss << "Filtration Complete" << endl ;
+	log_message(ss.str()) ;
 }
 
 int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
@@ -63,6 +72,14 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 	unordered_set<string>& read_ids_to_exclude_set = *(task.args.read_ids_to_exclude_set_ptr) ;
 	Path output_dir_path (task.args.output_dir_path) ;
 
+	// log group beginning
+	stringstream ss << endl << "Fastq Group:" << endl ;
+	for (string& fastq_path : fastq_path_set) {
+		ss << "\t" << fastq_path << endl ;
+	} 
+	ss << "\t" << "beginning" << end ;
+	log_message(ss.str()) ;
+
 	// make the output directory
 	output_dir_path.make_dir() ;
 
@@ -71,6 +88,8 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 	unordered_set<string> other_fastq_path_set ;
 	unordered_map<string, Gzin *> gzin_ptr_by_fastq_path ;
 	unordered_map<string, Gzout *> gzout_ptr_by_fastq_path ;
+	int write_cnt = 0 ;
+	int filtered_cnt = 0 ;
 	for (string fastq_path : fastq_path_set) {
 
 		// store fastq path conveniently
@@ -99,6 +118,7 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 
 		if (read_ids_to_exclude_set.count(read_id) == 0) {
 			// then print out the sequence for each fastq
+			write_cnt++ ;
 
 			// print first line of anchor
 			gzout_ptr_by_fastq_path.at(anchor_fastq_path)->write_line(anchor_line) ;
@@ -120,6 +140,7 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 
 		} else {
 			// read past this sequence for each fastq
+			filtered_cnt++ ;
 
 			for (int i = 0; i < 3; i++) {
 				gzin_ptr_by_fastq_path.at(anchor_fastq_path)->read_line() ;
@@ -133,4 +154,14 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 			}
 		}
 	}
+
+	// log ending
+	ss.str("") ;
+	ss << endl << "Fastq Group:" << endl ;
+	for (string& fastq_path : fastq_path_set) {
+		ss << "\t" << fastq_path << endl ;
+	}
+	ss << "\t" << to_string(write_cnt) << " sequences written" << end ;
+	ss << "\t" << to_string(filtered_cnt) << " sequences filtered" << end ;
+	log_message(ss.str()) ;
 }

@@ -2,11 +2,13 @@
 #define FILTER_FASTQS_H
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <unordered_set>
 #include <unordered_map>
 #include <stdexcept>
 
+#include "log.h"
 #include "path.h"
 #include "gzfile.h"
 #include "task_pool.h"
