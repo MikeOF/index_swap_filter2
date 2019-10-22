@@ -173,7 +173,7 @@ int collect_swapped_reads_task_func(Task<int, Collect_swapped_reads_args> task) 
 	}
 	gzout.flush_close() ;
 
-	// log activity
+	// log endind
 	ss.str("") ;
 	ss << log_header << to_string(swapped_in_read_ids.size()) ;
 	ss << " swapped in read ids written to " << swapped_in_read_ids_path << endl ;

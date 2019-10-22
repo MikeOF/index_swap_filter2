@@ -218,7 +218,8 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
 	// collect cug labels
-
+	
+	// log activity
 	ss.str("") ;
 	ss << GLOBAL_LOG_HEADER << "collecting CUG label chunks into " 
 	ss << Path(cug_label_path).to_relative_path_string() << endl ;

@@ -96,7 +96,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 	Whitelist wlist = Whitelist(sample.get_whitelist_path()) ;
 
 	// log materials
-    string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
+    string log_header = get_sample_log_header(sample) ;
     string bc_fastq_relative_path_string = Path(bc_fastq_path).to_relative_path_string() ;
 
     // log beginning
@@ -151,7 +151,8 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 
     // log ending
     ss.str("") ;
-    ss << log_header << to_string(seq_cnt) << " barcode seqnum read id lines read from " << bc_fastq_relative_path_string << endl ;
+    ss << log_header << to_string(seq_cnt) << " barcode seqnum read id lines read from " ;
+    ss << bc_fastq_relative_path_string << endl ;
     log_message(ss.str()) ;
 
     return tuple<string, vector<string>> (sample.get_key(), gz_csw_out.get_files()) ;
@@ -159,8 +160,10 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 
 int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) {
 
+    Sample& sample = *(task.args.sample_ptr) ;
+
     // log activity
-    string log_header = task.args.sample_ptr->get_project_name() + " - " + task.args.sample_ptr->get_sample_name() + " : " ;
+    string log_header = get_sample_log_header(sample) ;
     stringstream ss << log_header << "collecting sorted barcode seqnum read id lines" << endl ;
     log_message(ss.str()) ;
 
@@ -172,7 +175,8 @@ int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) 
     string bcsnrid_relative_path_string = Path(task.args.bcsnrid_path).to_relative_path_string() ;
     if (lines_written >= 0) {
         ss.str("") ;
-        ss << log_header << to_string(lines_written) << " barcode seqnum read id lines written to " << bcsnrid_relative_path_string << endl ;
+        ss << log_header << to_string(lines_written) << " barcode seqnum read id lines written to " ;
+        ss << bcsnrid_relative_path_string << endl ;
         log_message(ss.str()) ;
     } else {
         ss.str("") ;

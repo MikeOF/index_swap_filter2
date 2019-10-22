@@ -6,7 +6,7 @@ void filter_fastqs(int threads, string& output_dir_path,
 	string& read_ids_to_exclude_path, unordered_set<string>& fastq_path_set) {
 
 	// log spacing
-	stringstream ss << "Filtration Beginning" << endl ;
+	stringstream ss << endl << "Filtration Beginning" << endl ;
 	log_message(ss.str()) ;
 
 	// get groups of corresponding fastqs
@@ -61,7 +61,7 @@ void filter_fastqs(int threads, string& output_dir_path,
 
 	// log ending
 	ss.str("") ;
-	ss << "Filtration Complete" << endl ;
+	ss << endl << "Filtration Complete" << endl ;
 	log_message(ss.str()) ;
 }
 

@@ -51,7 +51,7 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 	string sample_key = sample.get_key() ;
 
 	// log strings
-    string log_header = sample.get_project_name() + " - " + sample.get_sample_name() + " : " ;
+    string log_header = get_sample_log_header(sample) ;
     string suspect_read_fastq_relative_path_string = Path(suspect_read_fastq_path).to_relative_path_string() ;
 
     // log beginning
