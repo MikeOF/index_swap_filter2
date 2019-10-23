@@ -49,6 +49,9 @@ void filter_fastqs(int threads, const string& output_dir_path,
 		read_ids_to_exclude_set.insert(read_id) ;
 	}
 
+	// make the output directory
+	Path(output_dir_path).make_dir() ;
+
 	// create and run filtration tasks
 	stack<Task<int, Filter_fastq_set_args>> filter_task_stack ;
 	for (auto it = fastq_path_by_first_read_id.begin(); it != fastq_path_by_first_read_id.end(); ++it) {
@@ -87,9 +90,6 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 	} 
 	ss << "\t" << "beginning" << endl ;
 	log_message(ss.str()) ;
-
-	// make the output directory
-	output_dir_path.make_dir() ;
 
 	// get maps of gzins and gzouts
 	string anchor_fastq_path ;
