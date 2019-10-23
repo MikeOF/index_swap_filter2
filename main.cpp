@@ -76,13 +76,14 @@ void detect(int argc, char ** argv) {
 	string function_name = string(argv[0]) + string(argv[1]) ;
 
 	// parse arguments
-	if (argc < 6) { show_detect_usage(function_name) ; exit(1) ; }
+	if (argc < 7) { show_detect_usage(function_name) ; exit(1) ; }
 
 	string threads_arg = argv[2] ;
-	string star_reference_list_arg = argv[3] ;
+	string workdir_path_arg = argv[3] ;
+	string star_reference_list_arg = argv[5] ;
 
 	vector<string> sample_def_vect_arg ;
-	for (int i = 4; i < argc; i++) { sample_def_vect_arg.push_back(argv[i]) ; }
+	for (int i = 5; i < argc; i++) { sample_def_vect_arg.push_back(argv[i]) ; }
 
 	// ----------------------------
 	//   Threads
@@ -156,7 +157,7 @@ void detect(int argc, char ** argv) {
 	// --------------------------
 
 	// work dir path
-	Path work_dir_path (argv[2]) ;
+	Path work_dir_path (workdir_path_arg) ;
 
 	if (work_dir_path.exists()) {
 		ss.str("") ;
