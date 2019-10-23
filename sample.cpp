@@ -10,7 +10,7 @@ Sample::Sample (const string& sample_def) {
 	istringstream token_stream(sample_def) ;
 	while (getline(token_stream, token, ',')) tokens.push_back(token) ;
 
-	if (tokens.size() != 8) {
+	if (tokens.size() != 7) {
 		throw runtime_error ("could not parse sample definition: " + sample_def) ;
 	}
 
