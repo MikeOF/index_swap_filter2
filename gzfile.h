@@ -65,8 +65,9 @@ class Gzout {
 		void flush_close() ;
 };
 
-const int COMBINE_INTERNAL_BUFFER_BYTES = 512000 ;
-const int COMBINE_CHAR_BUFFER_BYTES = 256000 ;
+const int GLOBAL_GZFILE_INTERNAL_BUFFER_BYTES = 512000 ;
+const int GLOBAL_GZFILE_CHAR_BUFFER_BYTES = 256000 ;
 void combine_gz_files(string&, vector<string>&) ;
+void copy_gz_file(string, string) ;
 
 #endif

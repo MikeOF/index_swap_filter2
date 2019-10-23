@@ -21,6 +21,10 @@ Workdir::Workdir (Path base_dir_path, string star_ref_list, const unordered_map<
 	this->cug_label_base_dir_path = this->base_dir_path.join("cell_umi_gene_labels") ;
 	this->cug_label_base_dir_path.make_dir() ;
 
+	// overlap table paths
+	this->unfiltered_overlap_path = this->base_dir_path.join("unfiltered_cell_overlap.tsv").to_string() ;
+	this->filtered_overlap_path = this->base_dir_path.join("filtered_cell_overlap.tsv").to_string() ;
+
 	// parse star reference paths and annotation paths
 	vector<string> tokens ;
 	string token ;

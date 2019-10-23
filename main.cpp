@@ -18,6 +18,7 @@
 #include "label_suspects.h"
 #include "call_swapped_reads.h"
 #include "filter_fastqs.h"
+#include "check_cell_overlap.h"
 
 using namespace std ;
 
@@ -197,11 +198,33 @@ void detect(int argc, char ** argv) {
 		// call swaps
 		write_swapped_reads(threads, samples, workdir) ;
 
+		// write out cell overlap
+		check_cell_barcode_overlap(threads, samples, workdir) ;
+
 	} catch (exception& e) {
 		ss.str("") ;
 		ss << e.what() << endl ; 
 		log_error_message(ss.str()) ;
 		exit(1) ; 
+	}
+
+	// ----------------------------
+	//   Copy IHOP Read IDS to Fastq Dirs
+	// --------------------------
+	for (string sample_key : workdir.get_sample_keys()) {
+
+		Path fastq_dir_path (samples.at(sample_key).get_fastq_dir_path()) ;
+		Path swapped_in_read_ids_path (workdir.get_swapped_in_read_ids_path(sample_key)) ;
+
+		// log activity
+		ss.str("") ;
+		ss << get_sample_log_header(samples.at(sample_key)) ;
+		ss << "copying " << swapped_in_read_ids_path.to_relative_path_string() ;
+		ss << " to the fastq dir" << endl ;
+		log_message(ss.str()) ;
+
+		Path output_file_path = fastq_dir_path.join(swapped_in_read_ids_path.get_filename()) ;
+		copy_gz_file(swapped_in_read_ids_path.to_string(), output_file_path.to_string()) ;
 	}
 }
 

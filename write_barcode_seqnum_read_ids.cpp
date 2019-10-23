@@ -139,7 +139,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
             
             if (!v_cell_bc.empty()) {
 
-                stringstream ss;
+                stringstream ss ;
                 ss << v_cell_bc << umi ;
 
                 string key = ss.str() ;

@@ -35,7 +35,9 @@ class Sample {
 		vector<string> get_sequence_fastq_paths() const { return sequence_fastq_paths ; } 
 
 		string parse_cell_barcode(const string& barcode) { return barcode.substr(cell_bc_start, cell_bc_len) ; }
+		int get_cell_barcode_len() { return cell_bc_len ; }
 		string parse_umi(const string& barcode) { return barcode.substr(umi_start, umi_len) ; }
+		int get_umi_len() { return umi_len ; }
 		string to_string() ;
 };
 

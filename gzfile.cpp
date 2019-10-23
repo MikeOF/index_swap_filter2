@@ -205,15 +205,24 @@ void Gzout::flush_close() {
 
 void combine_gz_files(string& out_path, vector<string>& gz_file_vect) {
 
+	// check paths
+	for (string in_path : gz_file_vect) {
+		if (!Path(in_path).is_file()) throw runtime_error("in path is not an existant file, " + in_path) ;
+	}
+	if (Path(out_path).is_file()) throw runtime_error("out path is an existant file, " + out_path) ;
+	if (Path(out_path).get_parent_path().is_dir()) {
+		throw runtime_error("out path's parent is not an existant directory, " + out_path) ;
+	}
+
 	// open the output gz file
 	gzFile out_gzfile = gzopen(out_path.c_str(), "w") ;
 	if (out_gzfile == NULL) throw runtime_error("could not open gzipped file, " + out_path) ;
 
 	// set the output's internal buffer
-	bool check = gzbuffer(out_gzfile, COMBINE_INTERNAL_BUFFER_BYTES) ;
+	bool check = gzbuffer(out_gzfile, GLOBAL_GZFILE_INTERNAL_BUFFER_BYTES) ;
 	if (check) throw runtime_error("could not set internal gzFile buffer, " + out_path) ;
 
-	char * char_buffer = new char[COMBINE_CHAR_BUFFER_BYTES] ;
+	char * char_buffer = new char[GLOBAL_GZFILE_CHAR_BUFFER_BYTES] ;
 
 	// write each gz file to the output file
 	for (string in_path : gz_file_vect) {
@@ -225,16 +234,57 @@ void combine_gz_files(string& out_path, vector<string>& gz_file_vect) {
 		}
 
 		// set the input's internal gz buffer
-		check = gzbuffer(in_gzfile, COMBINE_INTERNAL_BUFFER_BYTES) ;
+		check = gzbuffer(in_gzfile, GLOBAL_GZFILE_INTERNAL_BUFFER_BYTES) ;
 		if (check) throw runtime_error("could not set the internal gzFile buffer, " + in_path) ;
 
 		// write the input to the output
 		while(!gzeof(in_gzfile)) {
-			int bytes_read = gzread(in_gzfile, char_buffer, COMBINE_CHAR_BUFFER_BYTES) ;
+			int bytes_read = gzread(in_gzfile, char_buffer, GLOBAL_GZFILE_CHAR_BUFFER_BYTES) ;
 			gzwrite(out_gzfile, char_buffer, bytes_read) ;
 		}
 		gzclose(in_gzfile) ;
 	}
+
+	// finally close out
+	gzclose(out_gzfile) ;
+	delete[] char_buffer ;
+} 
+
+void copy_gz_file(string in_path, string out_path) {
+
+	// check paths
+	if (!Path(in_path).is_file()) throw runtime_error("in path is not an existant file, " + in_path) ;
+	if (Path(out_path).is_file()) throw runtime_error("out path is an existant file, " + out_path) ;
+	if (Path(out_path).get_parent_path().is_dir()) {
+		throw runtime_error("out path's parent is not an existant directory, " + out_path) ;
+	}
+
+	// open the output gz file
+	gzFile out_gzfile = gzopen(out_path.c_str(), "w") ;
+	if (out_gzfile == NULL) throw runtime_error("could not open gzipped file, " + out_path) ;
+
+	// set the output's internal buffer
+	bool check = gzbuffer(out_gzfile, GLOBAL_GZFILE_INTERNAL_BUFFER_BYTES) ;
+	if (check) throw runtime_error("could not set internal gzFile buffer, " + out_path) ;
+
+	char * char_buffer = new char[GLOBAL_GZFILE_CHAR_BUFFER_BYTES] ;
+
+	// open the input file
+	gzFile in_gzfile  = gzopen(in_path.c_str(), "r") ;
+	if (in_gzfile == NULL) {
+		throw runtime_error("could not open gzipped file, " + in_path) ;
+	}
+
+	// set the input's internal gz buffer
+	check = gzbuffer(in_gzfile, GLOBAL_GZFILE_INTERNAL_BUFFER_BYTES) ;
+	if (check) throw runtime_error("could not set the internal gzFile buffer, " + in_path) ;
+
+	// write the input to the output
+	while(!gzeof(in_gzfile)) {
+		int bytes_read = gzread(in_gzfile, char_buffer, GLOBAL_GZFILE_CHAR_BUFFER_BYTES) ;
+		gzwrite(out_gzfile, char_buffer, bytes_read) ;
+	}
+	gzclose(in_gzfile) ;
 
 	// finally close out
 	gzclose(out_gzfile) ;

@@ -19,6 +19,8 @@ class Workdir {
 	unordered_set<string> sample_keys ;
 	string suspect_read_fastq_path ;
 	Path cug_label_base_dir_path ;
+	string unfiltered_overlap_path ;
+	string filtered_overlap_path ;
 
 	// per star ref
 	unordered_set<string> star_reference_paths ;
@@ -57,6 +59,9 @@ class Workdir {
 		string get_suspect_read_fastq_path() { return this->suspect_read_fastq_path ; }
 
 		unordered_set<string> get_star_reference_paths() { return this->star_reference_paths ; }
+
+		string get_unfiltered_overlap_path() { return this->unfiltered_overlap_path ; }
+		string get_filtered_overlap_path() { return this->filtered_overlap_path ; }
 
 		string get_bcsnrid_path(string) ;
 		string get_bcsnrid_chunks_path(string, string) ;
