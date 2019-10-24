@@ -80,7 +80,7 @@ void detect(int argc, char ** argv) {
 
 	string threads_arg = argv[2] ;
 	string workdir_path_arg = argv[3] ;
-	string star_reference_list_arg = argv[5] ;
+	string star_reference_list_arg = argv[4] ;
 
 	vector<string> sample_def_vect_arg ;
 	for (int i = 5; i < argc; i++) { sample_def_vect_arg.push_back(argv[i]) ; }
