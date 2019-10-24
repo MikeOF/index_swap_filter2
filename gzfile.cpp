@@ -210,7 +210,7 @@ void combine_gz_files(string& out_path, vector<string>& gz_file_vect) {
 		if (!Path(in_path).is_file()) throw runtime_error("in path is not an existant file, " + in_path) ;
 	}
 	if (Path(out_path).is_file()) throw runtime_error("out path is an existant file, " + out_path) ;
-	if (Path(out_path).get_parent_path().is_dir()) {
+	if (!Path(out_path).get_parent_path().is_dir()) {
 		throw runtime_error("out path's parent is not an existant directory, " + out_path) ;
 	}
 
@@ -255,7 +255,7 @@ void copy_gz_file(string in_path, string out_path) {
 	// check paths
 	if (!Path(in_path).is_file()) throw runtime_error("in path is not an existant file, " + in_path) ;
 	if (Path(out_path).is_file()) throw runtime_error("out path is an existant file, " + out_path) ;
-	if (Path(out_path).get_parent_path().is_dir()) {
+	if (!Path(out_path).get_parent_path().is_dir()) {
 		throw runtime_error("out path's parent is not an existant directory, " + out_path) ;
 	}
 

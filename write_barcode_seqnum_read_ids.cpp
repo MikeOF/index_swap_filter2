@@ -49,8 +49,6 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
         vector<string> chunk_files = get<1>(bcsnrid_chunk_paths_stack.top()) ;
         bcsnrid_chunk_paths_stack.pop() ;
 
-        cout << "write_bcsnrid_lines: gotten tuple items for " + sample_key + "\n" ;
-
         // map the chunk file paths by the sample key
         if (chunk_files_by_sample_key.find(sample_key) == chunk_files_by_sample_key.end()) {
 
@@ -164,8 +162,6 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 }
 
 int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) {
-
-    cout << "collect_bcsnrid_lines_task_func: beginning\n" ;
 
     // logging stream
     stringstream ss ;
