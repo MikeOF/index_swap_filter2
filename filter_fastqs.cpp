@@ -163,6 +163,13 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 		}
 	}
 
+	// close files & delete gzins/outs
+	for (string fastq_path : fastq_path_set) {
+		delete gzin_ptr_by_fastq_path.at(fastq_path) ;
+		gzout_ptr_by_fastq_path.at(fastq_path)->flush_close() ;
+		delete gzout_ptr_by_fastq_path.at(fastq_path) ;
+	}
+
 	// log ending
 	ss.str("") ;
 	ss << endl << "Fastq Group:" << endl ;

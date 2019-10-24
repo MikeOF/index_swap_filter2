@@ -50,8 +50,8 @@ Sample::Sample (const string& sample_def) {
 
 	cell_bc_start = barcode_key.find('C') ;
 	cell_bc_len = barcode_key.rfind('C') - cell_bc_start + 1 ;
-	umi_start = barcode_key.find('U'); 
-	umi_len = barcode_key.rfind('U') - umi_start + 1;
+	umi_start = barcode_key.find('U') ; 
+	umi_len = barcode_key.rfind('U') - umi_start + 1 ;
 
 	if (cell_bc_len + umi_len + num_N != barcode_key.size()) {
 		throw runtime_error ("could not parse barcode key: " + barcode_key) ;
