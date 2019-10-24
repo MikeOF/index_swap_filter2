@@ -44,12 +44,10 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
     unordered_map<string, vector<string>> chunk_files_by_sample_key ;
     while (!bcsnrid_chunk_paths_stack.empty()) {
 
-        tuple<string, vector<string>> sample_key_and_bcsnrid_chunk = bcsnrid_chunk_paths_stack.top() ; 
-        bcsnrid_chunk_paths_stack.pop() ;
-
         // parse sample key and vector of chunk file paths
         string sample_key = get<0>(bcsnrid_chunk_paths_stack.top()) ;
         vector<string> chunk_files = get<1>(bcsnrid_chunk_paths_stack.top()) ;
+        bcsnrid_chunk_paths_stack.pop() ;
 
         cout << "write_bcsnrid_lines: gotten tuple items for " + sample_key + "\n" ;
 
