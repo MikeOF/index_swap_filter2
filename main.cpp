@@ -187,6 +187,7 @@ void detect(int argc, char ** argv) {
 		// read in barcode seq-num read ids into the workdir
 		write_bcsnrid_lines(threads, samples, workdir) ;
 
+		cout << "main: calling determine_suspect_brsnrid_lines\n" ;
 		// write out the suspect read ids
 		determine_suspect_bcsnrid_lines(threads, samples, workdir) ;
 

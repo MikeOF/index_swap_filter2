@@ -6,6 +6,7 @@ void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 	Task<unordered_map<string,vector<string>>, Write_out_suspect_bcsnrid_lines_args> write_out_suspect_bcsnrid_lines_task ;
 	write_out_suspect_bcsnrid_lines_task.func = write_out_suspect_bcsnrid_lines_task_func ;
 
+	cout << "determine_suspect_bcsnrid_lines: for loop, create suspect task\n" ;
 	// for each sample key
 	for (string sample_key : workdir.get_sample_keys()) {
 
@@ -30,6 +31,7 @@ void determine_suspect_bcsnrid_lines(int threads, unordered_map<string, Sample>&
 	unordered_map<string,vector<string>> supect_bcsnrid_chunk_paths_by_sample_key 
 		= supect_bcsnrid_chunk_paths_by_sample_key_stack.top();
 
+	cout << "determine_suspect_bcsnrid_lines: for loop, create suspect collection task\n" ;
 	// create suspect collection task stack
 	stack<Task<int, Collect_suspect_bcsnrid_lines_args>> collection_task_stack ;
 	for (auto it = supect_bcsnrid_chunk_paths_by_sample_key.begin(); 

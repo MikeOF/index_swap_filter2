@@ -32,12 +32,13 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
             task.func = extract_bcsnrid_lines_task_func ; 
             task.args.bcsnrid_chunks_path = workdir.get_bcsnrid_chunks_path(sample_key, bc_fq_path) ;
             task.args.bc_fastq_path = bc_fq_path ;
-            task.args.sample_ptr = &samples.at(sample_key) ;
+            task.args.sample_ptr = &(samples.at(sample_key)) ;
 
             extract_task_stack.push(task) ;
         }
     }
     stack<tuple<string, vector<string>>> bcsnrid_chunk_paths_stack = run_tasks(threads, extract_task_stack) ;
+
 
     // map bcsnrid chunks by sample
     unordered_map<string, vector<string>> chunk_files_by_sample_key ;
@@ -77,7 +78,7 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
         task.args.bcsnrid_chunk_paths = it->second ;
         task.args.bcsnrid_chunk_dir_paths = bcsnrid_chunk_dir_paths ;
         task.args.bcsnrid_path = workdir.get_bcsnrid_path(it->first) ;
-        task.args.sample_ptr = &samples.at(it->first) ;
+        task.args.sample_ptr = &(samples.at(it->first)) ;
 
         collect_task_stack.push(task) ;
     }
@@ -163,6 +164,8 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
 }
 
 int collect_bcsnrid_lines_task_func(Task<int, Collect_bcsnrid_lines_args> task) {
+
+    cout << "collect_bcsnrid_lines_task_func: beginning\n" ;
 
     // logging stream
     stringstream ss ;
