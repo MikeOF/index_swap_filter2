@@ -51,6 +51,8 @@ void write_bcsnrid_lines(int threads, unordered_map<string, Sample>& samples, Wo
         string sample_key = get<0>(bcsnrid_chunk_paths_stack.top()) ;
         vector<string> chunk_files = get<1>(bcsnrid_chunk_paths_stack.top()) ;
 
+        cout << "write_bcsnrid_lines: gotten tuple items for " + sample_key + "\n" ;
+
         // map the chunk file paths by the sample key
         if (chunk_files_by_sample_key.find(sample_key) == chunk_files_by_sample_key.end()) {
 
