@@ -180,7 +180,7 @@ int read_in_cell_barcode_counts_task_func(Task<int, Read_in_cell_barcode_counts_
 	ss << log_header << to_string(unfiltered_cell_barcode_set.size()) ;
 	ss << " unfiltered cell barcodes taken " ;
 	ss << to_string(filtered_cell_barcode_set.size()) ;
-	ss << " filtered cell barcodes taken" ;
+	ss << " filtered cell barcodes taken" << endl ;
 	log_message(ss.str()) ;
 
 	return 0 ;
@@ -232,8 +232,15 @@ void write_cell_overlap(string unfiltered_overlap_path, string filtered_overlap_
 				inserter (filtered_intersection, filtered_intersection.begin())) ;
 
 			// compute overlap
-			int unfiltered_overlap = unfiltered_intersection.size() / unfiltered_set.size() ;
-			int filtered_overlap = filtered_intersection.size() / filtered_set.size() ;
+			float unfiltered_overlap = 0.0 ;
+			if (unfiltered_set.size() != 0) {
+				unfiltered_overlap = unfiltered_intersection.size() / unfiltered_set.size() ;
+			} 
+
+			float filtered_overlap = 0.0 ;
+			if (filtered_set.size() != 0) {
+				filtered_overlap = filtered_intersection.size() / filtered_set.size() ;
+			}
 
 			// format overlap
 			stringstream unf_oss ;

@@ -235,6 +235,7 @@ int collect_suspect_bcsnrid_lines_task_func(Task<int, Collect_suspect_bcsnrid_li
 
 	// log result
 	ss.str("") ;
+	ss << log_header ;
 	if (lines_written < 0) {
 
 		ss << "suspect barcode seqnum read id lines copied to " ;
