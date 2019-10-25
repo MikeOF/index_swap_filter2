@@ -234,12 +234,12 @@ void write_cell_overlap(string unfiltered_overlap_path, string filtered_overlap_
 			// compute overlap
 			float unfiltered_overlap = 0.0 ;
 			if (unfiltered_set.size() != 0) {
-				unfiltered_overlap = unfiltered_intersection.size() / unfiltered_set.size() ;
+				unfiltered_overlap = 100 * unfiltered_intersection.size() / unfiltered_set.size() ;
 			} 
 
 			float filtered_overlap = 0.0 ;
 			if (filtered_set.size() != 0) {
-				filtered_overlap = filtered_intersection.size() / filtered_set.size() ;
+				filtered_overlap = 100 * filtered_intersection.size() / filtered_set.size() ;
 			}
 
 			// format overlap
