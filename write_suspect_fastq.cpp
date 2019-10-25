@@ -125,15 +125,15 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
         // write out sequence fastqs that match the read id
         for (string fastq_name : fastq_name_set) {
 
-        	// get read of fastq
+        	// get read id of fastq
         	string& read_id_line = seq_lines_by_fastq_name.at(fastq_name).at(0) ;
-        	string fastq_read_id = read_id_line.substr(0, read_id_line.find_first_of(" \t")) ;
+        	string fastq_read_id = read_id_line.substr(1, read_id_line.find_first_of(" \t") - 1) ;
 
         	if (read_id == fastq_read_id) {
 
         		// update read id
         		stringstream ss ;
-        		ss << read_id << SUSPECT_FASTQ_READ_ID_DELIM << sample_key ;
+        		ss << "@" << read_id << SUSPECT_FASTQ_READ_ID_DELIM << sample_key ;
         		ss << SUSPECT_FASTQ_READ_ID_DELIM << barcode ;
          		seq_lines_by_fastq_name.at(fastq_name).at(0) = ss.str() ;
 
@@ -152,6 +152,9 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 	for (auto it = gzin_ptr_by_fastq_name.begin(); it != gzin_ptr_by_fastq_name.end(); ++it) {
 		delete it->second ;
 	}
+
+	// remove suspect bcsnrid path
+	Path(suspect_bcsnrid_path).remove_file() ;
 
 	// log ending
 	ss.str("") ;

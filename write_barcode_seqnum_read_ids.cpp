@@ -126,7 +126,7 @@ tuple<string, vector<string>> extract_bcsnrid_lines_task_func(Task<tuple<string,
             idx = 0;
             seq_cnt++ ;
 
-            string read_id = lines[0].substr(0, lines[0].find_first_of(' ')) ;
+            string read_id = lines[0].substr(1, lines[0].find_first_of(" \t") - 1) ;
             string cell_bc = sample.parse_cell_barcode(lines[1]) ;
             string umi = sample.parse_umi(lines[1]) ;
 

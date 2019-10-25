@@ -123,7 +123,7 @@ int filter_fastq_set_task_func(Task<int, Filter_fastq_set_args> task) {
 
 		// get and check read id
 		// first char is @, not part of the read id, start at pos 1
-		string read_id = anchor_line.substr(1, anchor_line.find_first_of(" \t")) ;
+		string read_id = anchor_line.substr(1, anchor_line.find_first_of(" \t") - 1) ;
 
 		if (read_ids_to_exclude_set.count(read_id) == 0) {
 			// then print out the sequence for each fastq
