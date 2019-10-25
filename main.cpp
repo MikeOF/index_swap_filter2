@@ -73,7 +73,7 @@ void detect(int argc, char ** argv) {
 	stringstream ss ;
 
 	// function name
-	string function_name = string(argv[0]) + string(argv[1]) ;
+	string function_name = string(argv[0]) + " " + string(argv[1]) ;
 
 	// parse arguments
 	if (argc < 7) { show_detect_usage(function_name) ; exit(1) ; }
@@ -243,7 +243,7 @@ void filter(int argc, char ** argv) {
 	stringstream ss ;
 
 	// function name
-	string function_name = string(argv[0]) + string(argv[1]) ;
+	string function_name = string(argv[0]) + " " + string(argv[1]) ;
 
 	// parse and validate arguments
 	if (argc < 6) { show_filter_usage(function_name) ; exit(1) ; }
