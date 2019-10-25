@@ -245,8 +245,8 @@ void write_cell_overlap(string unfiltered_overlap_path, string filtered_overlap_
 			// format overlap
 			stringstream unf_oss ;
 			stringstream f_oss ;
-			unf_oss << setprecision(2) << unfiltered_overlap ;
-			f_oss << setprecision(2) << filtered_overlap ;
+			unf_oss << fixed << setprecision(2) << unfiltered_overlap ;
+			f_oss << fixed << setprecision(2) << filtered_overlap ;
 
 			// add to overlap maps
 			unfiltered_sample_key_cell_overlap_by_sample_key.at(sample_key).insert(
