@@ -22,7 +22,7 @@
 
 using namespace std ;
 
-const int CELL_UMI_COUNT_THRESHOLD = 750 ;
+const int CELL_UMI_COUNT_THRESHOLD = 500 ;
 
 void check_cell_barcode_overlap(int, unordered_map<string, Sample>&, Workdir&) ;
 

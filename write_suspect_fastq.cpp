@@ -154,8 +154,7 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 	}
 
 	// remove suspect bcsnrid path
-	// TODO uncomment
-	// Path(suspect_bcsnrid_path).remove_file() ;
+	Path(suspect_bcsnrid_path).remove_file() ;
 
 	// log ending
 	ss.str("") ;
@@ -185,8 +184,7 @@ int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_
 
 	// remove sample specific suspect read fastqs
 	for (string sample_suspect_read_fastq_path : suspect_read_fastq_paths) {
-		// TODO uncomment
-		// Path(sample_suspect_read_fastq_path).remove_file() ;
+		Path(sample_suspect_read_fastq_path).remove_file() ;
 	}
 
 	return 0 ;

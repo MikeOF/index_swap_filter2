@@ -28,8 +28,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 	}
 
 	// remove the suspect read fastq
-	// TODO uncomment
-	// Path(workdir.get_suspect_read_fastq_path()).remove_file() ;
+	Path(workdir.get_suspect_read_fastq_path()).remove_file() ;
 
 	// create cug parsing tasks
 	stack<Task<int, Parse_sorted_cug_labels_args>> parse_task_stack ;
@@ -234,8 +233,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	// remove cug label chunks and sam file
 	Path(cug_label_chunks_path).remove_dir_recursively() ;
-	// TODO uncomment
-	// Path(sam_path).remove_file() ;
+	Path(sam_path).remove_file() ;
 
 	return 0 ;
 }
