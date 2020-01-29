@@ -69,6 +69,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--outSAMprimaryFlag AllBestScore " ;
     ss_star_cmd << "--twopassMode Basic " ;
     ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
+    ss_star_cmd << "--limitSjdbInsertNsj 2000000" ;
 
     // call STAR
     int result = system(ss_star_cmd.str().c_str()) ;
