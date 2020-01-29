@@ -56,8 +56,6 @@ class Workdir {
 
 		unordered_set<string> get_sample_keys() { return this->sample_keys ; }
 
-		string get_suspect_read_fastq_path() { return this->suspect_read_fastq_path ; }
-
 		unordered_set<string> get_star_reference_paths() { return this->star_reference_paths ; }
 
 		string get_unfiltered_overlap_path() { return this->unfiltered_overlap_path ; }
@@ -68,6 +66,7 @@ class Workdir {
 		string get_suspect_bcsnrid_path(string) ;
 		string get_suspect_bcsnrid_chunks_path(string) ;
 		string get_suspect_read_fastq_path(string) ;
+		string get_suspect_read_fastq_path_list_string() ;
 		string get_alignment_dir_path(string) ;
 		string get_annotation_dir_path(string) ;
 		string get_sam_path(string) ;

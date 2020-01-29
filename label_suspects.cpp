@@ -13,7 +13,7 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		task.func = align_suspect_reads_task_func ;
 		task.args.star_reference_path = star_reference_path ;
 		task.args.alignment_dir_path = workdir.get_alignment_dir_path(star_reference_path) ;
-		task.args.suspect_reads_fastq = workdir.get_suspect_read_fastq_path() ;
+		task.args.suspect_reads_fastq_list = workdir.get_suspect_read_fastq_path_list_string() ;
 		task.args.threads = threads ;
 
 		stack<Task<string, Align_suspect_reads_args>> task_stack ;
@@ -26,9 +26,6 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		// map sam path to cug label path
 		sam_path_by_star_reference_path.insert(make_pair(star_reference_path, sam_path)) ;
 	}
-
-	// remove the suspect read fastq
-	Path(workdir.get_suspect_read_fastq_path()).remove_file() ;
 
 	// create cug parsing tasks
 	stack<Task<int, Parse_sorted_cug_labels_args>> parse_task_stack ;
@@ -53,7 +50,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
 	// Parse arguments
 	string& star_reference_path = task.args.star_reference_path ;
 	string& alignment_dir_path = task.args.alignment_dir_path ;
-	string& suspect_reads_fastq = task.args.suspect_reads_fastq ;
+	string& suspect_reads_fastq_list = task.args.suspect_reads_fastq_list ;
 	int threads = task.args.threads ;
 
 	// create STAR command to align suspect reads
@@ -63,7 +60,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--genomeDir " << star_reference_path << " " ;
     ss_star_cmd << "--quantMode TranscriptomeSAM " ;
     ss_star_cmd << "--outSAMtype SAM " ;
-    ss_star_cmd << "--readFilesIn " << suspect_reads_fastq << " " ;
+    ss_star_cmd << "--readFilesIn " << suspect_reads_fastq_list << " " ;
     ss_star_cmd << "--readFilesCommand zcat " ;
     ss_star_cmd << "--outFileNamePrefix " << alignment_dir_path << "/ " ;
     ss_star_cmd << "--outSAMprimaryFlag AllBestScore " ;

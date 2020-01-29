@@ -162,6 +162,21 @@ string Workdir::get_suspect_read_fastq_path(string sample_key) {
 	return this->suspect_read_fastq_path_by_sample_key.at(sample_key) ;
 }
 
+string Workdir::get_suspect_read_fastq_path_list_string() { 
+
+	stringstream ss_suspect_fq_list ;
+	bool add_comma = false ;
+	for (string sample_key : this->sample_keys) {
+
+		if (add_comma) { ss_suspect_fq_list << "," ; }
+		else { add_comma = true ; }
+
+		ss_suspect_fq_list << this->get_suspect_read_fastq_path(sample_key) ;
+	}
+
+	return ss_suspect_fq_list.str() ; 
+}
+
 string Workdir::get_alignment_dir_path(string star_ref_path) {
 	return this->alignment_dir_path_by_star_reference_path.at(star_ref_path) ;
 }

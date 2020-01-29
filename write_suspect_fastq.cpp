@@ -21,25 +21,25 @@ void write_suspect_read_fastqs(int threads, unordered_map<string, Sample>& sampl
 	}
 	run_tasks(threads, task_stack) ;
 
-	// write out the global suspect read fastq
+	// // write out the global suspect read fastq
 
-	// create the task
-	Task<int, Collect_suspect_read_fastqs_args> collect_task ;
-	collect_task.func = collect_suspect_read_fastqs_task_func ;
-	collect_task.args.global_suspect_read_fastq_path = workdir.get_suspect_read_fastq_path() ;
+	// // create the task
+	// Task<int, Collect_suspect_read_fastqs_args> collect_task ;
+	// collect_task.func = collect_suspect_read_fastqs_task_func ;
+	// collect_task.args.global_suspect_read_fastq_path = workdir.get_suspect_read_fastq_path() ;
 
-	for (string sample_key : workdir.get_sample_keys()) { 
+	// for (string sample_key : workdir.get_sample_keys()) { 
 
-		collect_task.args.suspect_read_fastq_paths.push_back(
-			workdir.get_suspect_read_fastq_path(sample_key)) ;
-	}
+	// 	collect_task.args.suspect_read_fastq_paths.push_back(
+	// 		workdir.get_suspect_read_fastq_path(sample_key)) ;
+	// }
 
-	// add to a stack
-	stack<Task<int, Collect_suspect_read_fastqs_args>> collect_task_stack ;
-	collect_task_stack.push(collect_task) ;
+	// // add to a stack
+	// stack<Task<int, Collect_suspect_read_fastqs_args>> collect_task_stack ;
+	// collect_task_stack.push(collect_task) ;
 
-	// run tasks
-	run_tasks(1, collect_task_stack) ;
+	// // run tasks
+	// run_tasks(1, collect_task_stack) ;
 }
 
 int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args> task) {
@@ -165,27 +165,27 @@ int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args
 	return 0 ;
 }
 
-int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_args> task) {
+// int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_args> task) {
 
-	// logging stream
-	stringstream ss ;
+// 	// logging stream
+// 	stringstream ss ;
 
-	// parse
-	vector<string>& suspect_read_fastq_paths = task.args.suspect_read_fastq_paths ; 
-	string& global_suspect_read_fastq_path = task.args.global_suspect_read_fastq_path ;
+// 	// parse
+// 	vector<string>& suspect_read_fastq_paths = task.args.suspect_read_fastq_paths ; 
+// 	string& global_suspect_read_fastq_path = task.args.global_suspect_read_fastq_path ;
 
-	// log activity
-	ss.str("") ; 
-	ss << GLOBAL_LOG_HEADER << "collecting suspect read fastqs into " ;
-	ss << Path(global_suspect_read_fastq_path).to_relative_path_string() << endl ;
-	log_message(ss.str()) ;
+// 	// log activity
+// 	ss.str("") ; 
+// 	ss << GLOBAL_LOG_HEADER << "collecting suspect read fastqs into " ;
+// 	ss << Path(global_suspect_read_fastq_path).to_relative_path_string() << endl ;
+// 	log_message(ss.str()) ;
 
-	combine_gz_files(global_suspect_read_fastq_path, suspect_read_fastq_paths) ;
+// 	combine_gz_files(global_suspect_read_fastq_path, suspect_read_fastq_paths) ;
 
-	// remove sample specific suspect read fastqs
-	for (string sample_suspect_read_fastq_path : suspect_read_fastq_paths) {
-		Path(sample_suspect_read_fastq_path).remove_file() ;
-	}
+// 	// remove sample specific suspect read fastqs
+// 	for (string sample_suspect_read_fastq_path : suspect_read_fastq_paths) {
+// 		Path(sample_suspect_read_fastq_path).remove_file() ;
+// 	}
 
-	return 0 ;
-}
+// 	return 0 ;
+// }

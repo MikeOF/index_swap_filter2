@@ -25,7 +25,7 @@ void label_suspect_reads(int, unordered_map<string, Sample>&, Workdir&) ;
 struct Align_suspect_reads_args {
 	string star_reference_path ;
 	string alignment_dir_path ;
-	string suspect_reads_fastq ;
+	string suspect_reads_fastq_list ;
 	int threads ;
 } ;
 
