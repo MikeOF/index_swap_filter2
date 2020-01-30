@@ -25,12 +25,4 @@ struct Write_suspect_read_fastqs_args {
 
 int write_suspect_read_fastqs_task_func(Task<int, Write_suspect_read_fastqs_args>) ;
 
-// struct Collect_suspect_read_fastqs_args {
-// 	vector<string> suspect_read_fastq_paths ;
-// 	string global_suspect_read_fastq_path ;
-// } ;
-
-// int collect_suspect_read_fastqs_task_func(Task<int, Collect_suspect_read_fastqs_args>) ;
-
-
 #endif
