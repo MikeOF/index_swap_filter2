@@ -27,6 +27,14 @@ void label_suspect_reads(int threads, unordered_map<string, Sample>& samples, Wo
 		sam_path_by_star_reference_path.insert(make_pair(star_reference_path, sam_path)) ;
 	}
 
+	// TODO remove
+	log_message("sam path by star reference path:\n\n") ;
+	for (auto it = sam_path_by_star_reference_path.begin(); it != sam_path_by_star_reference_path.end(); ++it) {
+		log_message("\tstar reference path: " + it->first + "\n") ;
+		log_message("\tsam path: " + it->second + "\n\n") ;
+	}
+	// end remove
+
 	// create cug parsing tasks
 	stack<Task<int, Parse_sorted_cug_labels_args>> parse_task_stack ;
 	for (string star_reference_path : workdir.get_star_reference_paths()) {
@@ -53,6 +61,14 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
 	string& suspect_reads_fastq_list = task.args.suspect_reads_fastq_list ;
 	int threads = task.args.threads ;
 
+	// TODO remove
+	log_message("align_suspect_reads_task_func task arguments:\n") ;
+	log_message("\tstar_reference_path: " + star_reference_path + "\n") ;
+	log_message("\talignment_dir_path: " + alignment_dir_path + "\n") ;
+	log_message("\tsuspect_reads_fastq_list: " + suspect_reads_fastq_list + "\n") ;
+	log_message("\tthreads: " + to_string(threads) + "\n") ;
+	// end remove
+
 	// create STAR command to align suspect reads
     stringstream ss_star_cmd ;
     ss_star_cmd << "STAR " ;
@@ -67,9 +83,17 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--twopassMode Basic " ;
     ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
     ss_star_cmd << "--limitSjdbInsertNsj 2000000" ;
+    string star_cmd = ss_star_cmd.str() ;
+
+    // Log STAR command
+    stringstream ss ;
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "running STAR command: " ;
+	ss << star_cmd << endl ;
+	log_message(ss.str()) ;
 
     // call STAR
-    int result = system(ss_star_cmd.str().c_str()) ;
+    int result = system(star_cmd.c_str()) ;
 
     // create samtools command to decompress BAM file
     Path alignment_dir_Path (alignment_dir_path) ;
@@ -80,18 +104,27 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_samtools_cmd << bam_path.to_string() ;
     ss_samtools_cmd << " > " ;
     ss_samtools_cmd << sam_path.to_string() ;
+    string samtools_cmd = ss_samtools_cmd.str() ;
+
+    // Log samtools command
+	ss.str("") ;
+	ss << GLOBAL_LOG_HEADER << "running samtools command: " ;
+	ss << samtools_cmd << endl ;
+	log_message(ss.str()) ;
 
     // call samtools
-    result = system(ss_samtools_cmd.str().c_str()) ;
+    result = system(samtools_cmd.c_str()) ;
 
+	// TODO uncomment
     // cleanup star alignment
-    for (string file_path : alignment_dir_Path.get_dir_list()) {
-    	Path file_Path (file_path) ;
-    	if (file_Path.to_string() != sam_path.to_string()) {
-    		if (file_Path.is_file()) { file_Path.remove_file() ; }
-    		else if (file_Path.is_dir()) { file_Path.remove_dir_recursively() ; }
-    	}
-    }
+    // for (string file_path : alignment_dir_Path.get_dir_list()) {
+    // 	Path file_Path (file_path) ;
+    // 	if (file_Path.to_string() != sam_path.to_string()) {
+    // 		if (file_Path.is_file()) { file_Path.remove_file() ; }
+    // 		else if (file_Path.is_dir()) { file_Path.remove_dir_recursively() ; }
+    // 	}
+    // }
+    // end uncomment
 
 	return sam_path.to_string() ;
 }
@@ -116,6 +149,14 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 	string& cug_label_chunks_path = task.args.cug_label_chunks_path ;
 	string& cug_label_path = task.args.cug_label_path ;
 	string& annotation_gtf_path = task.args.annotation_gtf_path ;
+
+	// TODO remove
+	log_message("parse_sorted_cug_labels_task_func task arguments:\n") ;
+	log_message("\tsam_path: " + sam_path + "\n") ;
+	log_message("\tcug_label_chunks_pathh: " + cug_label_chunks_path + "\n") ;
+	log_message("\tcug_label_path: " + cug_label_path + "\n") ;
+	log_message("\tannotation_gtf_path: " + annotation_gtf_path + "\n") ;
+	// end remove
 
 	// read in annotation gtf to map transcripts to genes
 	unordered_map<string, string> gene_id_by_transcript_id ;
