@@ -174,7 +174,7 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		while (getline(gtf_file, line)) {
 
 			// parse transcript lines
-			if (line.find("\ttranscript\t") != string::npos) {
+			if (line.find("transcript_id") != string::npos) {
 
 				int gene_id_start_pos = line.find("\"", line.find("gene_id \"") + 1) + 1 ;
 				int gene_id_end_pos = line.find("\"", gene_id_start_pos) ;
@@ -204,6 +204,12 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	} else { throw runtime_error("unable to open annotation gtf file: " + annotation_gtf_path) ; }
 
+
+	// TODO remove 
+	int sam_lines_read = 0 ;
+	int cug_lines_written = 0 ;
+	// end remove
+
 	// write out the cug lines
 	ifstream sam_file (sam_path) ;
 	vector<string> cug_chunk_files ;
@@ -215,6 +221,10 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 		int delim_size = SUSPECT_FASTQ_READ_ID_DELIM.size() ;
 
 		while(getline(sam_file, line)) {
+
+			// TODO remove 
+			sam_lines_read++;
+			// end remove
 
 			// get read id
 			int read_id_stop = line.find(SUSPECT_FASTQ_READ_ID_DELIM) ;
@@ -253,10 +263,22 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 			ss_line << barcode << '\t' << gene_id << '\t' << sample_key << '\t' << read_id ;
 
 			gz_csw_out.write_line(ss_key.str(), ss_line.str()) ;
+
+			// TODO remove 
+			cug_lines_written++ ;
+			// end remove
 		}
 		sam_file.close() ;
 		gz_csw_out.flush_close();
 		cug_chunk_files = gz_csw_out.get_files() ;
+
+		// TODO remove 
+		log_message("cug_chunk_files: \n") ;
+		for (string file : cug_chunk_files) {
+			log_message("\t" + file + "\n") ;
+		}
+		// end remove
+
 
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
 
@@ -270,9 +292,11 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	collect_sorted_chunks<string>(cug_label_path, cug_chunk_files, get_cug_key) ;
 
-	// remove cug label chunks and sam file
-	Path(cug_label_chunks_path).remove_dir_recursively() ;
-	Path(sam_path).remove_file() ;
+	// TODO uncomment
+	// // remove cug label chunks and sam file
+	// Path(cug_label_chunks_path).remove_dir_recursively() ;
+	// Path(sam_path).remove_file() ;
+	// end uncomment
 
 	return 0 ;
 }
