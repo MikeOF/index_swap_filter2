@@ -182,6 +182,10 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	} else { throw runtime_error("unable to open annotation gtf file: " + annotation_gtf_path) ; }
 
+	// check the transcript id to gene id map
+	if (gene_id_by_transcript_id.empty()) {
+		throw runtime_error("transcript id to gene id map is empty, annotation gtf file: " + annotation_gtf_path) ;
+	}
 
 	// write out the cug lines
 	ifstream sam_file (sam_path) ;
@@ -240,6 +244,11 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 
 	} else { throw runtime_error("unable to open sam file: " + sam_path) ; }
+
+	// check the vector of cug chunk files
+	if (cug_chunk_files.empty()) {
+		throw runtime_error("create an empty vector of cug chunk files from sam file: " + sam_path) ;
+	}
 
 	// collect cug labels
 	
