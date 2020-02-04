@@ -260,11 +260,9 @@ int parse_sorted_cug_labels_task_func(Task<int, Parse_sorted_cug_labels_args> ta
 
 	collect_sorted_chunks<string>(cug_label_path, cug_chunk_files, get_cug_key) ;
 
-	// TODO uncomment
-	// // remove cug label chunks and sam file
-	// Path(cug_label_chunks_path).remove_dir_recursively() ;
-	// Path(sam_path).remove_file() ;
-	// end uncomment
+	// remove cug label chunks and sam file
+	Path(cug_label_chunks_path).remove_dir_recursively() ;
+	Path(sam_path).remove_file() ;
 
 	return 0 ;
 }
