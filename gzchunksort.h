@@ -15,8 +15,8 @@ using namespace std ;
 template <typename K>
 class GzChunkSortWriter {
 
-	const int chunk_size = 20000000 ;
-	const int dir_limit = 100 ;
+	const int chunk_size = 10000000 ;
+	const int dir_limit = 200 ;
 
 	Path out_dir_path ;
 	map<K, vector<string>> sorted_lines ;
