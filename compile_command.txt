@@ -1,1 +1,1 @@
-g++ -O1 -std=c++11 path.cpp gzfile.cpp sample.cpp workdir.cpp whitelist.cpp write_barcode_seqnum_read_ids.cpp determine_suspect_barcodes.cpp write_suspect_fastq.cpp label_suspects.cpp call_swapped_reads.cpp filter_fastqs.cpp check_cell_overlap.cpp main.cpp -lz -pthread -o isf2
+g++ -O2 -std=c++11 path.cpp gzfile.cpp sample.cpp workdir.cpp whitelist.cpp write_barcode_seqnum_read_ids.cpp determine_suspect_barcodes.cpp write_suspect_fastq.cpp label_suspects.cpp call_swapped_reads.cpp filter_fastqs.cpp check_cell_overlap.cpp main.cpp -lz -pthread -o isf2
