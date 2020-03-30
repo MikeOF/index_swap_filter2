@@ -79,7 +79,7 @@ string align_suspect_reads_task_func(Task<string, Align_suspect_reads_args> task
     ss_star_cmd << "--twopassMode Basic " ;
     ss_star_cmd << "--outFilterMultimapScoreRange 0 " ;
     ss_star_cmd << "--limitSjdbInsertNsj 2000000" ;
-    ss_star_cmd << "--limitOutSJcollapsed 2000000" ;
+    ss_star_cmd << "--limitOutSJcollapsed 4000000" ;
     string star_cmd = ss_star_cmd.str() ;
 
     // call STAR
