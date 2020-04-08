@@ -264,9 +264,9 @@ void filter(int argc, char ** argv) {
 		exit(1) ; 
 	}
 
-	if (threads < 1 || threads > 20) {
+	if (threads < 1 || threads > 32) {
 		ss.str("") ;
-		ss << "threads argument must be between 0 and 21" << endl ;
+		ss << "threads argument must be between 1 and 32 inclusive" << endl ;
 		log_error_message(ss.str()) ;
 		show_filter_usage(function_name) ;
 		exit(1) ;
